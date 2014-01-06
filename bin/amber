@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+if ARGV.include?('--debug')
+  require 'debugger'
+end
+
+begin
+  require 'amber'
+rescue LoadError
+  base_dir = File.expand_path('..', File.dirname(File.symlink?(__FILE__) ? File.readlink(__FILE__) : __FILE__))
+  ["#{base_dir}/lib"].each do |path|
+    $LOAD_PATH.unshift(path) unless $LOAD_PATH.include?(path)
+  end
+  require 'amber'
+end
+
+def process_command_line_arguments
+  @command = nil
+  @command_arg = nil
+  @verbosity = false
+  loop do
+    case ARGV[0]
+      when 'init'        then @command = ARGV.shift; @command_arg = ARGV.shift
+      when 'build'       then @command = ARGV.shift
+      when 'clear'       then @command = ARGV.shift
+      when '--debug'     then ARGV.shift
+      when '-v'          then ARGV.shift
+      when /^-/          then usage("Unknown option: #{ARGV[0].inspect}")
+      else break
+    end
+  end
+  usage("No command given") unless @command
+end
+
+def usage(msg=nil)
+  $stderr.puts(msg)
+  $stderr.puts
+  $stderr.puts("Usage: #{File.basename($0)} COMMAND [OPTIONS]")
+  $stderr.puts
+  $stderr.puts("COMMAND may be one or more of:
+  init             -- create a new amber site
+  build            -- render static html pages
+  clear            -- erase static html pages")
+  $stderr.puts
+  $stderr.puts("OPTIONS may be one or more of:
+  -v               -- run in verbose mode")
+  exit(2)
+end
+
+def main
+  process_command_line_arguments
+  Amber::CLI.new(Dir.pwd).send(@command)
+end
+
+main
