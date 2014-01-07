@@ -225,6 +225,12 @@ module Amber
           end
         end
       end
+      asset_files.each do |asset_file|
+        src_file = File.join(@file_path, asset_file)
+        dst_file = File.join(dest_dir, *@path, asset_file)
+        File.unlink(dst_file) if File.exists?(dst_file)
+        File.link(src_file, dst_file)
+      end
       output_files
     end
 
@@ -286,7 +292,7 @@ module Amber
     ## CONTENT FILES
     ##
 
-    SUFFIXES = '(haml|md|markdown|txt|textile|rst|latex|pandoc|html)'
+    SUFFIXES = '(haml|md|markdown|text|textile|rst|html)'
     LOCALES  = "(#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})"
     # e.g. en.haml or es.md
     LOCALE_FILE_MATCH = /^#{LOCALES}\.#{SUFFIXES}$/
@@ -317,6 +323,9 @@ module Amber
     end
 
     #
+    # returns the files that compose the content for this page,
+    # a different file for each locale (or no locale)
+    #
     # returns an array like so:
     #
     #  [
@@ -342,6 +351,25 @@ module Amber
         Dir.foreach(@file_path).collect { |file|
           if file && file =~ LOCALE_FILE_MATCH
             [File.join(@file_path, file), $1.to_sym]
+          end
+        }.compact
+      end
+    end
+
+    #
+    # returns an array of files in the folder that corresponds to this page
+    # that are not other pages. in other words, the assets in this folder
+    #
+    # file paths are relative to @file_path
+    #
+    def asset_files
+      if @simple_page
+        []
+      else
+        assets = {}
+        Dir.foreach(@file_path).collect { |file|
+          if file && file !~ /\.#{SUFFIXES}$/
+            file unless File.directory?(File.join(@file_path, file))
           end
         }.compact
       end
