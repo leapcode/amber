@@ -1,6 +1,7 @@
 
 module Amber
   class CLI
+
     def initialize(root, *args)
       @options = {}
       @options = args.pop if args.last.is_a?(::Hash)
@@ -8,6 +9,7 @@ module Amber
     end
 
     def init
+      puts 'not yet implemented'
     end
 
     def build
@@ -19,6 +21,15 @@ module Amber
     def clear
       site = Site.new(@root)
       site.clear
+    end
+
+    def clean
+      clear
+    end
+
+    def rebuild
+      clear
+      build
     end
 
   end

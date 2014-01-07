@@ -17,14 +17,19 @@ end
 def process_command_line_arguments
   @command = nil
   @command_arg = nil
-  @verbosity = false
+  @verbose = false
   loop do
     case ARGV[0]
       when 'init'        then @command = ARGV.shift; @command_arg = ARGV.shift
       when 'build'       then @command = ARGV.shift
+      when 'rebuild'     then @command = ARGV.shift
+      when 'clean'       then @command = 'clear'; ARGV.shift
       when 'clear'       then @command = ARGV.shift
       when '--debug'     then ARGV.shift
-      when '-v'          then ARGV.shift
+      when '--help'      then usage
+      when 'help'        then usage
+      when '-h'          then usage
+      when '-v'          then @verbose = true; ARGV.shift
       when /^-/          then usage("Unknown option: #{ARGV[0].inspect}")
       else break
     end
@@ -33,17 +38,21 @@ def process_command_line_arguments
 end
 
 def usage(msg=nil)
-  $stderr.puts(msg)
+  $stderr.puts(msg) if msg
   $stderr.puts
-  $stderr.puts("Usage: #{File.basename($0)} COMMAND [OPTIONS]")
+  $stderr.puts("Usage: #{File.basename($0)} [OPTIONS] COMMAND")
   $stderr.puts
   $stderr.puts("COMMAND may be one or more of:
-  init             -- create a new amber site
+  init DIRECTORY   -- create a new amber site in DIRECTORY
   build            -- render static html pages
-  clear            -- erase static html pages")
+  rebuild          -- runs `clear` then `build`
+  clear            -- erase static html pages
+  clean            -- alias for clear
+  help             -- this message")
   $stderr.puts
   $stderr.puts("OPTIONS may be one or more of:
-  -v               -- run in verbose mode")
+  -v               -- run in verbose mode
+  --debug          -- enable debugger")
   exit(2)
 end
 
