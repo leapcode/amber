@@ -1,1 +1,1 @@
-@site_title = "Site Title"
+@title = "Site Title"

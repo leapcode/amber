@@ -4,6 +4,9 @@ require 'logger'
 
 module Amber
 
+  class MissingTemplate < StandardError
+  end
+
   #
   # Languages that might possibly be supported.
   #
@@ -45,3 +48,4 @@ require 'amber/static_page_array'
 require 'amber/cli'
 require 'amber/render/layout'
 require 'amber/render/view'
+require 'amber/render/template'

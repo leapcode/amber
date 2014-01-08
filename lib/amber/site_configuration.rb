@@ -10,7 +10,7 @@ require 'pathname'
 module Amber
   class SiteConfiguration
 
-    attr_accessor :site_title
+    attr_accessor :title
     attr_accessor :pagination_size
     attr_accessor :mount_points
 
@@ -51,7 +51,7 @@ module Amber
       @path = '/'
       @mount_points = []
       @mount_points << self
-      @site_title = "untitled"
+      @title = "untitled"
       @pagination_size = 20
       self.eval
       reset_timestamp

@@ -10,7 +10,7 @@ module Amber
     attr_accessor :root
     attr_accessor :menu
 
-    def_delegators :@config, :site_title, :pagination_size
+    def_delegators :@config, :title, :pagination_size
 
     def initialize(root)
       @config = SiteConfiguration.load(root)
@@ -81,7 +81,7 @@ module Amber
       I18n.load_path += Dir[File.join(mp.locales_dir, '/*.{rb,yml,yaml}')] if mp.locales_dir
 
       # add the full directory tree
-      base_page.scan do |page|
+      scan_tree(base_page) do |page|
         add_page(page)
       end
     end
@@ -101,6 +101,27 @@ module Amber
         end
       end
       return @root
+    end
+
+    private
+
+    #
+    # loads a directory, creating StaticPages from the directory structure,
+    # yielding each StaticPage as it is created.
+    #
+    def scan_tree(page, &block)
+      Dir.chdir(page.file_path) do
+        Dir.glob("*").each do |child_name|
+          if File.directory?(child_name)
+            child = StaticPage.new(page, child_name)
+            yield child
+            scan_tree(child, &block)
+          elsif StaticPage.is_simple_page?(child_name)
+            child = StaticPage.new(page, child_name)
+            yield child
+          end
+        end
+      end
     end
 
   end

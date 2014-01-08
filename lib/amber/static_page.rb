@@ -3,13 +3,9 @@
 #
 # represents a static website page.
 #
-#
 
 require 'i18n'
 require 'pathname'
-require 'RedCloth'
-#require 'rbst'
-require 'rdiscount'
 require 'fileutils'
 
 module Amber
@@ -40,25 +36,6 @@ module Amber
         end
       else
         site.pages[filter]
-      end
-    end
-
-    #
-    # loads a directory, creating StaticPages from the directory structure,
-    # yielding each StaticPage as it is created.
-    #
-    def scan(&block)
-      Dir.chdir(file_path) do
-        Dir.glob("*").each do |child_name|
-          if File.directory?(child_name)
-            child = StaticPage.new(self, child_name)
-            yield child
-            child.scan(&block)
-          elsif is_simple_page?(child_name)
-            child = StaticPage.new(self, child_name)
-            yield child
-          end
-        end
       end
     end
 
@@ -152,36 +129,23 @@ module Amber
       "<'#{@path.join('/')}' #{children.inspect}>"
     end
 
-    #
-    # title is tricky
-    #
-    # * for nav_title, default to title, then try to inherit.
-    # * for title, default to nav_title, then try to inherit.
-    #
     def title(locale=I18n.locale)
-      title = props.get_var_without_inheritance(:title, locale)
-      title ||= props.get_var_without_inheritance(:nav_title, locale)
-      title ||= props.get_var(:title, locale)
-      title ||= props.get_var(:nav_title, locale)
-      title ||= I18n.t('pages.'+@name, :raise => false, :default => "Untitled", :locale => locale)
-      return title
+      props.get_var_without_inheritance(:title, locale) ||
+      props.get_var_without_inheritance(:nav_title, locale) ||
+      @name
     end
 
     def nav_title(locale=I18n.locale)
-      return_value = I18n.t('pages.'+@name, :raise => false, :default => "Untitled", :locale => locale)
-      if return_value == "Untitled"
-        property_title = props.get_var_without_inheritance(:nav_title, locale)
-        property_title ||= props.get_var_without_inheritance(:title, locale)
-        property_title ||= props.get_var(:nav_title, locale)
-        property_title ||= props.get_var(:title, locale)
-        property_title ||= return_value
-        return_value = property_title
-      end
-      return_value
+      props.get_var_without_inheritance(:nav_title, locale) ||
+      props.get_var_without_inheritance(:title, locale) ||
+      @name
     end
 
-    def site_title
-      @mount_point.site_title
+    #
+    # returns title iff explicitly set.
+    #
+    def explicit_title(locale)
+      props.get_var_without_inheritance(:title, locale)
     end
 
     #
@@ -194,7 +158,7 @@ module Amber
         begin
           render_locale(renderer, I18n.default_locale)
         rescue
-          Amber::logger.error "ERROR: could not file template path #{self.template_path}"
+          Amber.logger.error "ERROR: could not file template path #{self.template_path}"
           raise exc
         end
       end
@@ -207,6 +171,7 @@ module Amber
     #
     def render_to_file(dest_dir)
       output_files = []
+      view = Render::View.new(self, self.mount_point)
       content_files.each do |content_file, file_locale|
         file_locale ||= I18n.default_locale
         if @simple_page
@@ -220,16 +185,22 @@ module Amber
         end
         if !File.exist?(destination_file) || File.mtime(content_file) > File.mtime(destination_file)
           File.open(destination_file, 'w') do |f|
-            layout = Render::Layout[props.layout || 'default']
-            f.write layout.render(self, render_content_file(content_file, file_locale))
+            layout = props.layout || 'default'
+            f.write view.render({file: content_file, layout: layout}, {locale: file_locale})
           end
         end
       end
       asset_files.each do |asset_file|
         src_file = File.join(@file_path, asset_file)
         dst_file = File.join(dest_dir, *@path, asset_file)
-        File.unlink(dst_file) if File.exists?(dst_file)
-        File.link(src_file, dst_file)
+        begin
+          unless Dir.exists?(File.dirname(dst_file))
+            FileUtils.mkdir_p(File.dirname(dst_file))
+          end
+          File.unlink(dst_file) if File.exists?(dst_file)
+          File.link(src_file, dst_file)
+        rescue SystemCallError
+        end
       end
       output_files
     end
@@ -305,8 +276,8 @@ module Amber
     # * we include files that end in appriopriate suffixes
     # * we exclude file names that are locales.
     #
-    def is_simple_page?(name)
-      name =~ /\.#{SUFFIXES}$/ && name !~ LOCALE_FILE_MATCH
+    def self.is_simple_page?(name)
+      name =~ /\.#{SUFFIXES}$/ && name !~ LOCALE_FILE_MATCH && name !~ /^_/
     end
 
     #
@@ -383,15 +354,6 @@ module Amber
     #  end
     #end
 
-    ##
-    ## RENDERING
-    ##
-
-    PROPERTY_HEADER = /^\s*(^(|- )@\w[^\n]*?\n)*/m
-
-    class MissingTemplate < StandardError
-    end
-
     def render_locale(renderer, locale)
       if renderer && is_haml_template?(locale)
         renderer.render_to_string(:template => self.template_path(locale), :layout => false).html_safe
@@ -403,77 +365,15 @@ module Amber
     def render_static_locale(locale)
       content_files.each do |content_file, file_locale|
         if file_locale.nil? || locale == file_locale
-          return render_content_file(content_file, locale)
+          return Render::View.new(self, self.mount_point).render({file: content_file}, {locale: file_locale})
         end
       end
       raise MissingTemplate.new(template_path(locale))
-    end
-
-    def render_content_file(content_file, locale)
-      content = File.read(content_file).sub(PROPERTY_HEADER, '')
-      suffix = File.extname(content_file)
-      if REDCLOTH_FORMATS[suffix]
-        render_redcloth(content, suffix, locale)
-      elsif RBST_FORMATS[suffix]
-        render_rbst(content, suffix, locale)
-      elsif RDISCOUNT_FORMATS[suffix]
-        render_rdiscount(content, suffix, locale)
-      else
-        "sorry, i don't understand how to render #{suffix}"
-      end
     end
 
     def is_haml_template?(locale)
       @suffix == '.haml' || File.exists?(self.absolute_template_path(locale) + '.haml')
     end
 
-    RBST_FORMATS = {
-      '.rst'      => :rst
-    }
-
-    def render_rbst(string, suffix, locale)
-      html = RbST.new(string).to_html
-      unless (title = explicit_title(locale)).nil?
-        html = "<h1 class=\"first\">#{title}</h1>\n\n" + html
-      end
-      return html
-    end
-
-    REDCLOTH_FORMATS = {
-      '.txt'      => :textile,
-      '.textile'  => :textile
-    }
-
-    def render_redcloth(string, suffix, locale)
-      unless (title = explicit_title(locale)).nil?
-        string = "h1(first). #{title}\n\n" + string
-      end
-      RedCloth.new(string).to_html
-    end
-
-    RDISCOUNT_FORMATS = {
-      '.md'      => :markdown,
-      '.markdown' => :markdown
-    }
-
-    def render_rdiscount(string, suffix, locale)
-      rd = RDiscount.new(string, :smart, :generate_toc, :autolink)
-      html = rd.to_html
-      if props.locale(locale).toc != false && rd.toc_content
-        #html = "<div id=\"TOC\">%s</div>\n\n%s" % [rd.toc_content.force_encoding('utf-8'), html]
-        html = "<div id=\"TOC\">%s</div>\n\n%s" % [rd.toc_content, html]
-      end
-      unless (title = explicit_title(locale)).nil?
-        html = "<h1 class=\"first\">#{title}</h1>\n\n" + html
-      end
-      return html
-    end
-
-    #
-    # returns title iff explicitly set.
-    #
-    def explicit_title(locale)
-      props.get_var_without_inheritance(:title, locale)
-    end
   end
 end

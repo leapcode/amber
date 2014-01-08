@@ -35,8 +35,7 @@ module Amber
         end
       end
 
-      def render(page, content)
-        view = View.new(page)
+      def render(view, content)
         @template.render(view) {content}
       end
     end
@@ -44,7 +43,7 @@ module Amber
     class DefaultLayout < Layout
       def initialize
         @template = Tilt::StringTemplate.new {DEFAULT}
-       end
+      end
       DEFAULT = '<!DOCTYPE html>
 <html>
 <head>

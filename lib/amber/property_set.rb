@@ -129,6 +129,7 @@ class Amber::PropertySet
   end
 
   def locale(l)
+    l ||= DEFAULT_LOCALE
     @locales[l.to_sym] || @locales[DEFAULT_LOCALE]
   end
 
