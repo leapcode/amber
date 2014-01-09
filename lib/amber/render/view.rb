@@ -33,7 +33,7 @@ module Amber
         push_locals(locals)
         locale = @locals[:locale]
         if options[:partial]
-          template = Template.new(file: find_file(partialize(options[:partial]), locale))
+          template = Template.new(file: find_file(partialize(options[:partial]), locale), partial: true)
         elsif options[:file]
           template = Template.new(file: find_file(options[:file], locale))
         elsif options[:text]
@@ -42,7 +42,7 @@ module Amber
         if options[:layout] && !options[:partial]
           layout = Render::Layout[options[:layout]]
           layout.render(self, template.render(self))
-        elsif @locals[:_type] == template.type
+        elsif @locals[:_type] == template.type && template.type != :haml
           File.read(template.file) # don't render if the calling template is of the same type.
         else
           template.render(self)
