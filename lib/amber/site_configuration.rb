@@ -13,23 +13,30 @@ module Amber
     attr_accessor :title
     attr_accessor :pagination_size
     attr_accessor :mount_points
+    attr_accessor :locales
+
+    attr_accessor :menu
 
     attr_accessor :root_dir
     attr_accessor :pages_dir
     attr_accessor :dest_dir
     attr_accessor :config_dir
     attr_accessor :config_file
+    attr_accessor :layouts_dir
     attr_accessor :path
     attr_accessor :menu_file
     attr_accessor :locales_dir
     attr_accessor :timestamp
 
+    extend Forwardable
+    def_delegators :@site, :pages, :find_page, :find_pages, :find_page_by_path, :find_page_by_name
+
     ##
     ## CLASS METHODS
     ##
 
-    def self.load(root, options={})
-      SiteConfiguration.new(root, options)
+    def self.load(site, root_dir, options={})
+      SiteConfiguration.new(site, root_dir, options)
     end
 
     ##
@@ -39,8 +46,9 @@ module Amber
     #
     # accepts a file_path to a configuration file.
     #
-    def initialize(root, options={})
-      @root_dir = File.expand_path(find_in_directory_tree('amber', 'config.rb', root))
+    def initialize(site, root_dir, options={})
+      @site = site
+      @root_dir = File.expand_path(find_in_directory_tree('amber', 'config.rb', root_dir))
       if @root_dir == '/'
         puts "Could not find amber/config.rb in the directory tree. Run `amber` from inside an amber website directory"
         exit(1)
@@ -58,6 +66,9 @@ module Amber
       @title = "untitled"
       @pagination_size = 20
 
+      @menu = Menu.new('root')
+      @menu.load(@menu_file) if @menu_file
+
       self.eval
       reset_timestamp
       Render::Layout.load(@layouts_dir)
@@ -66,6 +77,19 @@ module Amber
     #def include_site(directory_source, options={})
     #  @mount_points << SiteMountPoint.new(self, directory_source, options)
     #end
+
+    def default_locale=(locale)
+      I18n.default_locale = locale
+      @locales ||= [locale]
+    end
+
+    def locales=(locale_array)
+      locale_array.each do |locale|
+        if Amber::POSSIBLE_LANGUAGE_CODES.include?(locale.to_s) && !@locale.index(locale.to_sym)
+          @locales << locale.to_sym
+        end
+      end
+    end
 
     def pages_changed?
       @mount_points.detect {|mp| mp.changed?}

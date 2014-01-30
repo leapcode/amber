@@ -25,6 +25,7 @@ def process_command_line_arguments
       when 'rebuild'     then @command = ARGV.shift
       when 'clean'       then @command = 'clear'; ARGV.shift
       when 'clear'       then @command = ARGV.shift
+      when 'server'      then @command = ARGV.shift
       when '--debug'     then ARGV.shift
       when '--help'      then usage
       when 'help'        then usage
@@ -46,6 +47,7 @@ def usage(msg=nil)
   init DIRECTORY   -- create a new amber site in DIRECTORY
   build            -- render static html pages
   rebuild          -- runs `clear` then `build`
+  server           -- runs mini-web server at localhost:8000
   clear            -- erase static html pages
   clean            -- alias for clear
   help             -- this message")

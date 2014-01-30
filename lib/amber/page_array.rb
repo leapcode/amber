@@ -1,9 +1,9 @@
 #
 # Array of StaticPages
 #
-class Amber::StaticPageArray < Array
+class Amber::PageArray < Array
   def limit(num)
-    StaticPageArray.new(self[0..(num-1)])
+    PageArray.new(self[0..(num-1)])
   end
   def order_by(attr, options={})
     locale = options[:locale] || I18n.locale
@@ -12,8 +12,8 @@ class Amber::StaticPageArray < Array
       if direction == :desc
         a, b = b, a
       end
-      a_prop = a.props.locale(locale).send(attr)
-      b_prop = b.props.locale(locale).send(attr)
+      a_prop = a.prop(locale, attr)
+      b_prop = b.prop(locale, attr)
       if a_prop.nil? && b_prop.nil?
         0
       elsif a_prop.nil?
@@ -26,8 +26,8 @@ class Amber::StaticPageArray < Array
     end
     # remove pages from the results that have no value set for the attr
     array.delete_if do |page|
-      page.props.locale(locale).send(attr).nil?
+      page.prop(locale, attr).nil?
     end
-    return StaticPageArray.new.replace array
+    return PageArray.new.replace array
   end
 end

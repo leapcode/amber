@@ -12,11 +12,17 @@ module Amber
   module Render
 
     class Layout
-      def self.load(layouts_dir=nil)
+      def self.load(layout_dir=nil)
+        @layout_dirs ||= []
+        @layout_dirs << layout_dir
+        reload
+      end
+
+      def self.reload
         @layouts ||= {}
         @layouts['default'] = DefaultLayout.new
-        if layouts_dir
-          Dir.glob("#{layouts_dir}/*").each do |layout_file|
+        @layout_dirs.each do |dir|
+          Dir.glob("#{dir}/*").each do |layout_file|
             name = File.basename(layout_file).sub(/^([^\.]*).*$/, "\\1")
             @layouts[name] = Layout.new(layout_file)
           end
@@ -35,8 +41,8 @@ module Amber
         end
       end
 
-      def render(view, content)
-        @template.render(view) {content}
+      def render(view, &block)
+        @template.render(view, &block)
       end
     end
 

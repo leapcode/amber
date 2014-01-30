@@ -1,4 +1,3 @@
-
 module Amber
   class CLI
 
@@ -30,6 +29,11 @@ module Amber
     def rebuild
       clear
       build
+    end
+
+    def server
+      site = Site.new(@root)
+      Amber::Server.start(:port => 8000, :site => site)
     end
 
   end

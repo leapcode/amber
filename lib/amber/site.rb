@@ -5,22 +5,21 @@ module Amber
   class Site
     extend Forwardable
 
-    attr_accessor :pages
     attr_accessor :page_list
     attr_accessor :root
-    attr_accessor :menu
 
-    def_delegators :@config, :title, :pagination_size
+    def_delegators :@config, :dest_dir, :locales, :default_locale
 
-    def initialize(root)
-      @config = SiteConfiguration.load(root)
+    def initialize(root_dir)
+      @config = SiteConfiguration.load(self, root_dir)
     end
 
     def load_pages
-      @root      = nil
-      @pages     = {}
-      @page_list = StaticPageArray.new
-      @menu      = Menu.new('root')
+      @root          = nil
+      @pages_by_path = {}
+      @pages_by_name = {}
+      @page_list     = PageArray.new
+      @dir_list      = []
       @config.mount_points.each do |mp|
         add_mount_point(mp)
         mp.reset_timestamp
@@ -28,7 +27,7 @@ module Amber
     end
 
     def reload_pages_if_needed
-      if @pages.nil? || @config.pages_changed?
+      if @pages_by_path.nil? || @config.pages_changed?
         puts "Reloading pages ................."
         load_pages
       end
@@ -37,7 +36,15 @@ module Amber
     def render
       @page_list.each do |page|
         updated_files = page.render_to_file(@config.dest_dir)
+        putc '.'; $stdout.flush
       end
+      @dir_list.each do |directory|
+        src = File.join(@config.pages_dir, directory)
+        dst = File.join(@config.dest_dir, directory)
+        Render::Asset.render_dir(src, dst)
+        putc '.'; $stdout.flush
+      end
+      puts
     end
 
     def clear
@@ -56,6 +63,14 @@ module Amber
 
     def all_pages
       @page_list
+    end
+
+    def find_page_by_path(path)
+      @pages_by_path[path]
+    end
+
+    def find_page_by_name(name)
+      @pages_by_name[name]
     end
 
     private
@@ -77,18 +92,20 @@ module Amber
       base_page.mount_point = mp
 
       # load menu and locals
-      menu.load(mp.menu_file) if mp.menu_file
       I18n.load_path += Dir[File.join(mp.locales_dir, '/*.{rb,yml,yaml}')] if mp.locales_dir
 
       # add the full directory tree
-      scan_tree(base_page) do |page|
-        add_page(page)
+      base_page.scan_directory_tree do |page, asset_dir|
+        add_page(page) if page
+        @dir_list << asset_dir if asset_dir
       end
     end
 
     def add_page(page)
-      @pages[page.name] = page
-      @pages[page.path.join('/')] = page
+      #@pages[page.name] = page
+      # TODO: keep a separate hash of page names
+      @pages_by_name[page.name] = page
+      @pages_by_path[page.path.join('/')] = page
       @page_list << page
     end
 
@@ -96,32 +113,11 @@ module Amber
       so_far = []
       path.split('/').compact.each do |path_segment|
         so_far << path_segment
-        if page = @pages[so_far.join('/')]
+        if page = @pages_by_path[so_far.join('/')]
           return page
         end
       end
       return @root
-    end
-
-    private
-
-    #
-    # loads a directory, creating StaticPages from the directory structure,
-    # yielding each StaticPage as it is created.
-    #
-    def scan_tree(page, &block)
-      Dir.chdir(page.file_path) do
-        Dir.glob("*").each do |child_name|
-          if File.directory?(child_name)
-            child = StaticPage.new(page, child_name)
-            yield child
-            scan_tree(child, &block)
-          elsif StaticPage.is_simple_page?(child_name)
-            child = StaticPage.new(page, child_name)
-            yield child
-          end
-        end
-      end
     end
 
   end

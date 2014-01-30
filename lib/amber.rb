@@ -1,6 +1,9 @@
 # encoding: utf-8
 
 require 'logger'
+require 'i18n'
+require 'i18n/backend/fallbacks'
+I18n::Backend::Simple.send(:include, I18n::Backend::Fallbacks)
 
 module Amber
 
@@ -28,6 +31,9 @@ module Amber
   # Although everywhere else we use symbols for locales, this array should be strings:
   POSSIBLE_LANGUAGE_CODES = POSSIBLE_LANGUAGES.keys.map(&:to_s)
 
+  # Possible page suffixes. Only files with these suffixes are treated as pages
+  PAGE_SUFFIXES = %w(haml md markdown text textile rst html)
+
   def self.logger
     @logger ||= begin
       logger = Logger.new(STDOUT)
@@ -38,14 +44,22 @@ module Amber
 
 end
 
+require 'amber/cli'
+require 'amber/server'
+
 require 'amber/menu'
-require 'amber/property_set'
 require 'amber/site'
 require 'amber/site_configuration'
-require 'amber/site_mount_point'
+
 require 'amber/static_page'
-require 'amber/static_page_array'
-require 'amber/cli'
+require 'amber/static_page/filesystem'
+require 'amber/static_page/render'
+require 'amber/static_page/property_set'
+require 'amber/static_page/page_properties'
+require 'amber/page_array'
+
 require 'amber/render/layout'
 require 'amber/render/view'
 require 'amber/render/template'
+require 'amber/render/asset'
+require 'amber/render/autolink'
