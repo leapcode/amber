@@ -41,7 +41,11 @@ module Amber
         if inheritable_only || @this.nil?
           instance_variable_get("@#{var_name}")
         else
-          @this.get(var_name, false) || instance_variable_get("@#{var_name}")
+          value = @this.get(var_name, false)
+          if value.nil?
+            value = instance_variable_get("@#{var_name}")
+          end
+          value
         end
       end
 

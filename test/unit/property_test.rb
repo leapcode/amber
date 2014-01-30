@@ -19,7 +19,9 @@ class PropertyTest < Minitest::Test
 - @author = 'you'
 - @created_at = 'Sun Aug 12 18:32:20 PDT 2012'
 - @color = 'periwinkle'
+- @false_value = false
 - @this.local_value = 'robot overlord'
+- @this.local_false = false
 - ignored = 1
 )
     text_es = %(
@@ -41,12 +43,14 @@ class PropertyTest < Minitest::Test
   def test_simple_properties
     assert_equal 'hi', @pp.title
     assert_equal 'you', @pp.author
+    assert_equal false, @pp.false_value
     assert_nil @pp.ignored
   end
 
   def test_simple_locale
     assert_equal 'hi', @pp.prop(:en, :title)
     assert_equal 'hola', @pp.prop('es', 'title')
+    assert_equal false, @pp.prop('es', 'false_value')
     assert_nil @pp.prop('es', 'ignored')
 
     I18n.locale = :en
@@ -69,8 +73,11 @@ class PropertyTest < Minitest::Test
 
   def test_local_property
     assert_equal 'robot overlord', @pp.local_value
-    assert_equal 'robot overlord', @page_top.prop(:en, :local_value)
+    assert_equal 'robot overlord', @page_top.prop(:en, 'local_value')
+    assert_equal false, @page_top.prop(:en, :local_false)
+    assert_equal 'robot overlord', @page_top.prop(:es, :local_value)
     assert_nil @page_bottom.prop(:en, :local_value)
+    assert_nil @page_bottom.prop(:es, :local_value)
   end
 
   def test_inheritance
