@@ -37,7 +37,10 @@ module Amber
   def self.logger
     @logger ||= begin
       logger = Logger.new(STDOUT)
-      logger.level = Logger::DEBUG
+      logger.level = Logger::INFO
+      logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{severity}: #{msg}\n"
+      end
       logger
     end
   end

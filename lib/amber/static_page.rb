@@ -17,7 +17,8 @@ module Amber
       :site,                # associated Site
       :locales,             # currently unused
       :locale               # if the source page is only in a single locale
-      #:props               # set of page properties (PropertySet)
+
+    attr_reader :props      # set of page properties (PropertySet)
 
     ##
     ## CLASS METHODS
@@ -126,6 +127,34 @@ module Amber
 
     def prop(*args)
       @props.prop(*args)
+    end
+
+    #
+    # returns an array of normalized aliases based on the :alias property
+    # defined for a page.
+    #
+    # aliases are defined with a leading slash for absolute paths, or without a slash
+    # for relative paths. this method converts this to a format that amber uses
+    # (all absolute, with no leading slash).
+    #
+    # currently, we do not maintain per-locale paths or aliases.
+    #
+    def aliases
+      @aliases ||= begin
+        if @props.alias.nil?
+          []
+        else
+          @props.alias.collect {|alias_path|
+            if alias_path =~ /^\//
+              alias_path.sub(/^\//, '')
+            elsif @parent
+              (@parent.path + [alias_path]).join('/')
+            else
+              alias_path
+            end
+          }
+        end
+      end
     end
 
     protected

@@ -65,10 +65,10 @@ module Amber
       # same as render(), but only returns the table of contents, if available.
       # used when we want to insert the toc from one page into the content of a different page.
       #
-      def render_toc(view)
+      def render_toc(view, options={})
         @content ||= File.read(@file)
         if method = RENDER_MAP[@type]
-          self.send(method + '_toc', view, @content)
+          self.send(method + '_toc', view, @content, options)
         else
           ""
         end
@@ -124,8 +124,8 @@ module Amber
       end
 
       # render only the toc
-      def render_textile_toc(view, content)
-        generate_toc_from_textile(content)
+      def render_textile_toc(view, content, options)
+        generate_toc_from_textile(content, options)
       end
 
       def render_markdown(view, content)
@@ -150,14 +150,15 @@ module Amber
         "<div id=\"TOC\">%s</div>\n\n%s" % [toc.force_encoding('utf-8'), html]
       end
 
-      def generate_toc_from_textile(content)
+      def generate_toc_from_textile(content, options={})
         toc = ""
+        base = options[:href_base] || ""
         content.gsub(TEXTILE_TOC_RE) do |match|
           heading_depth = $1
           label = $2.gsub('"', '&quot;')
           anchor = nameize_str(label)
           indent = '#' * heading_depth.to_i
-          toc << %(#{indent} ["#{label}":##{anchor}]\n)
+          toc << %(#{indent} ["#{label}":#{base}##{anchor}]\n)
         end
         RedCloth.new(toc).to_html
       end

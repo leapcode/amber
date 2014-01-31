@@ -21,6 +21,8 @@ module Amber
     #
     # Directory paths are dirs in the tree that don't contain any pages.
     #
+    # this is NOT thread safe
+    #
     def self.scan_directory_tree(parent_page, absolute_dir_path, relative_dir_path, &block)
       Dir.chdir(absolute_dir_path) do
         Dir.glob("*").each do |child_path|
@@ -247,8 +249,15 @@ module Amber
           end
           props.eval(headers.join("\n"), locale)
         end
+        cleanup_properties(props, locale)
       end
       return props
+    end
+
+    def cleanup_properties(props, locale)
+      if props.prop(locale, :alias)
+        props.set_prop(locale, :alias, [props.prop(locale, :alias)].flatten)
+      end
     end
 
     # RAILS

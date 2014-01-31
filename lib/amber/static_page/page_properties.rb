@@ -38,7 +38,7 @@ module Amber
           # template is evaluated with binding of ps object
           Haml::Engine.new(template_string, :format => :html5).render(ps)
         rescue Exception => exc
-          raise exc if TESTING
+          raise exc if defined?(TESTING)
         end
 
         # convert date/time variables to objects of class Time
@@ -87,6 +87,13 @@ module Amber
           properties.get(var_name)
         else
           nil
+        end
+      end
+
+      def set_prop(locale, var_name, value)
+        properties = @locales[locale.to_sym]
+        if properties
+          properties.set(var_name, value)
         end
       end
 

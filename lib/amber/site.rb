@@ -35,7 +35,7 @@ module Amber
 
     def render
       @page_list.each do |page|
-        updated_files = page.render_to_file(@config.dest_dir)
+        page.render_to_file(@config.dest_dir)
         putc '.'; $stdout.flush
       end
       @dir_list.each do |directory|
@@ -102,10 +102,15 @@ module Amber
     end
 
     def add_page(page)
-      #@pages[page.name] = page
-      # TODO: keep a separate hash of page names
       @pages_by_name[page.name] = page
       @pages_by_path[page.path.join('/')] = page
+      page.aliases.each do |alias_path|
+        if @pages_by_path[alias_path]
+          Amber.logger.warn "WARNING: page `#{page.path.join('/')}` has alias `#{alias_path}`, but this path is already taken"
+        else
+          @pages_by_path[alias_path] = page
+        end
+      end
       @page_list << page
     end
 

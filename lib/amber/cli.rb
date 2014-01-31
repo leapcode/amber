@@ -23,12 +23,12 @@ module Amber
     end
 
     def clean(options)
-      clear
+      clear(options)
     end
 
     def rebuild(options)
-      clear
-      build
+      clear(options)
+      build(options)
     end
 
     def server(options)

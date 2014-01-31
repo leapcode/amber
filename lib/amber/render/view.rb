@@ -71,11 +71,11 @@ module Amber
         pop_locals
       end
 
-      def render_toc(page)
+      def render_toc(page, options={})
         locale = @locals[:locale]
         file = page.content_file(locale)
         template = Template.new(file: file)
-        template.render_toc(self)
+        template.render_toc(self, options)
       end
 
       private

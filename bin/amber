@@ -62,6 +62,9 @@ end
 
 def main
   process_command_line_arguments
+  if @verbose
+    Amber.logger.level = Logger::DEBUG
+  end
   Amber::CLI.new(Dir.pwd).send(@command, {:port => @port, :verbose => @verbose, :arg => @command_arg})
 end
 

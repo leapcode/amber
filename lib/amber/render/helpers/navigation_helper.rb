@@ -91,6 +91,80 @@ module Amber
         end
       end
 
+      #
+      # inserts an directory index built from the page's children
+      #
+      # def child_summaries(options={})
+      #   page = options.delete(:page) || @page
+      #   return unless page
+      #   locale = @locals[:locale]
+      #   menu = submenu_for_page(page)
+      #   return unless menu
+      #   haml do
+      #     menu.children.each do |submenu|
+      #       child_page = page.child(submenu.name)
+      #       next unless child_page # might be an entry in menu.txt with no actual page
+      #       haml :h3 do
+      #         haml :a, child_page.nav_title(locale), :href => page_path(child_page)
+      #       end
+      #       if summary = child_page.prop(locale, 'summary')
+      #         haml :p, summary
+      #       end
+      #       if options[:include_toc]
+      #         toc_html = render_toc(child_page)
+      #         haml :div, toc_html
+      #       end
+      #     end
+      #   end
+      # end
+
+      #
+      # inserts an directory index built from the page's children
+      #
+      # options:
+      #   :include_levels
+      #   :page
+      #   :include_toc
+      #
+      def child_summaries(options={})
+        page = options.delete(:page) || @page
+        return "" if page.nil? or page.children.empty?
+
+        levels_max = options[:levels] || 1
+        level      = options.delete(:level) || 1
+        heading    = level + 2 - levels_max
+        locale     = @locals[:locale]
+        menu       = submenu_for_page(page)
+        if menu && menu.children.any?
+          children = menu.children
+        else
+          children = page.children
+        end
+
+        haml do
+          children.each do |child|
+            child_page = child.is_a?(Amber::Menu) ? page.child(child.name) : child
+            next unless child_page
+            haml "h#{heading}" do
+              haml :a, child_page.nav_title(locale), :href => page_path(child_page)
+            end
+            if summary = child_page.prop(locale, 'summary')
+              haml :p, summary
+            end
+            if options[:include_toc]
+              toc_html = render_toc(child_page, :href_base => page_path(child_page))
+              haml toc_html
+            end
+            if level < levels_max
+              haml child_summaries({:page => child_page, :levels => levels_max, :level => level+1, :include_toc => options[:include_toc]})
+            end
+          end
+        end
+      rescue Exception => exc
+        puts exc
+        puts exc.backtrace
+      end
+
       private
 
       #
@@ -117,33 +191,6 @@ module Amber
         menu_item.path == page_path || menu_item.path_prefix_of?(page_path)
       end
 
-      #
-      # inserts an directory index built from the page's children
-      #
-      def child_summaries(options={})
-        page = options.delete(:page) || @page
-        return unless page
-        locale = @locals[:locale]
-        menu = submenu_for_page(page)
-        return unless menu
-        haml do
-          menu.children.each do |submenu|
-            child_page = page.child(submenu.name)
-            next unless child_page # might be an entry in menu.txt with no actual page
-            haml :h3 do
-              haml :a, child_page.nav_title(locale), :href => page_path(child_page)
-            end
-            if summary = child_page.prop(locale, 'summary')
-              haml :p, summary
-            end
-            if options[:include_toc]
-              toc_html = render_toc(child_page)
-              haml :div, toc_html
-            end
-          end
-        end
-      end
-
       def submenu_for_page(page)
         menu = @site.menu
         page.path.each do |segment|
@@ -165,21 +212,6 @@ end
     page = site.find_page(page)
     @current_page_path = page.path
     page_body(page)
-  end
-
-  def child_summaries(page=@page)
-    return unless page
-    menu = submenu_for_page(page)
-    return unless menu
-    haml do
-      menu.children.each do |submenu|
-        child_page = page.child(submenu.name)
-        haml :h3 do
-          haml :a, child_page.nav_title, :href => page_path(child_page)
-        end
-        haml :p, child_page.props.summary
-      end
-    end
   end
 
 =end
