@@ -61,12 +61,12 @@ module Amber
       #
       # returns the shortest possible path. this would be nice to support some day, but more difficult with statically rendered sites.
       #
-      def page_path(page)
-        #if page.props.path_prefix
-        #  "/#{I18n.locale.to_s}/#{page.props.path_prefix}/#{page.name}"
-        #else
-          '/' + ([I18n.locale.to_s] + page.path).join('/')
-        #end
+      def page_path(page, locale=I18n.locale)
+        if page.prop(locale, :alias)
+          "/#{locale}/#{page.prop(locale, :alias).first}/#{page.name}"
+        else
+          "/#{locale}/#{page.path.join('/')}"
+        end
       end
 
     end

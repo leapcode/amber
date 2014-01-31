@@ -55,8 +55,6 @@ module Amber
         if options[:layout] && !options[:partial]
           layout = Render::Layout[options[:layout]]
           layout.render(self) { |layout_yield_argument| template.render(self, layout_yield_argument) }
-        elsif @locals[:_type] == template.type && template.type != :haml
-          File.read(template.file) # don't render if the calling template is of the same type.
         else
           template.render(self)
         end
@@ -72,10 +70,18 @@ module Amber
       end
 
       def render_toc(page, options={})
-        locale = @locals[:locale]
-        file = page.content_file(locale)
-        template = Template.new(file: file)
-        template.render_toc(self, options)
+        unless page.is_a?(StaticPage)
+          page = @site.find_pages(page)
+        end
+        if page
+          locale = @locals[:locale]
+          file   = page.content_file(locale)
+          template = Template.new(file: file)
+          options[:href_base] ||= page_path(page, locale)
+          template.render_toc(self, options)
+        else
+          ""
+        end
       end
 
       private

@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "amber"
-  s.version     = "0.2.0"
+  s.version     = "0.2.1"
   s.summary     = "Static website generator"
   s.description = "Amber is a super simple and super flexible static website generator with support for nice localization and navigation."
   s.authors     = ["Elijah Sparrow"]

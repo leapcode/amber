@@ -43,7 +43,7 @@ module Amber
     ##
 
     def initialize(parent, name, file_path=nil)
-      @children = []  # array of StaticPages
+      @children = PageArray.new  # array of StaticPages
       @nav_title = {} # key is locale
       @title = {}     # key is locale
 

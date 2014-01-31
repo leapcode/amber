@@ -18,6 +18,9 @@ module Amber
 
       TEXTILE_TOC_RE = /^\s*h([1-6])\.\s+(.*)/
 
+      ERB_TAG_RE = /<%=.*?%>/
+      ERB_PLACEHOLDER_RE = /xx erb tag\d+ xx/
+
       attr_reader :file
       attr_reader :type
       attr_reader :content
@@ -48,13 +51,11 @@ module Amber
           # load content and strip out the property header
           @content ||= File.read(@file).sub(PROPERTY_HEADER, '')
 
-          # first, apply erb in context of `view`, to give static markup
-          # a chance to do something dynamic.
-          content = render_erb(@content, view)
-
           # render content
           if method = RENDER_MAP[@type]
-            self.send(method, view, content)
+            content, erb_tags = replace_erb_tags(@content)
+            html = self.send(method, view, content)
+            render_erb(restore_erb_tags(html, erb_tags), view)
           else
             "sorry, i don't understand how to render #{@type}"
           end
@@ -79,6 +80,32 @@ module Amber
       def render_erb(string, view)
         template = Tilt::ERBTemplate.new {string}
         template.render(view)
+      end
+
+      #
+      # takes raw markup, and replaces every <%= x %> with a
+      # markup-safe placeholder. erb_tags holds a map of placeholder
+      # to original erb. e.g. {"ERBTAG0" => "<%= 'hi' %>"}
+      #
+      def replace_erb_tags(content)
+        counter = 0
+        erb_tags = {}
+        new_content = content.gsub(ERB_TAG_RE) do |match|
+          placeholder = "xx erb tag#{counter} xx"
+          erb_tags[placeholder] = match
+          counter+=1
+          placeholder
+        end
+        return [new_content, erb_tags]
+      end
+
+      #
+      # replaces erb placeholders with actual erb
+      #
+      def restore_erb_tags(html, erb_tags)
+        html.gsub(ERB_PLACEHOLDER_RE) do |match|
+          erb_tags[match]
+        end
       end
 
       def render_title(view)

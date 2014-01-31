@@ -251,6 +251,9 @@ module Amber
         end
         cleanup_properties(props, locale)
       end
+      unless props.prop_without_inheritance(I18n.default_locale, :name)
+        props.set_prop(I18n.default_locale, :name, self.name)
+      end
       return props
     end
 

@@ -94,40 +94,17 @@ module Amber
       #
       # inserts an directory index built from the page's children
       #
-      # def child_summaries(options={})
-      #   page = options.delete(:page) || @page
-      #   return unless page
-      #   locale = @locals[:locale]
-      #   menu = submenu_for_page(page)
-      #   return unless menu
-      #   haml do
-      #     menu.children.each do |submenu|
-      #       child_page = page.child(submenu.name)
-      #       next unless child_page # might be an entry in menu.txt with no actual page
-      #       haml :h3 do
-      #         haml :a, child_page.nav_title(locale), :href => page_path(child_page)
-      #       end
-      #       if summary = child_page.prop(locale, 'summary')
-      #         haml :p, summary
-      #       end
-      #       if options[:include_toc]
-      #         toc_html = render_toc(child_page)
-      #         haml :div, toc_html
-      #       end
-      #     end
-      #   end
-      # end
-
-      #
-      # inserts an directory index built from the page's children
-      #
       # options:
-      #   :include_levels
-      #   :page
-      #   :include_toc
+      #   :levels         -- the max levels to descend, default is 1
+      #   :page           -- StaticPage instance or nil
+      #   :include_toc    -- true or false
+      #   :order_by       -- arguments to PageArray#order_by
       #
       def child_summaries(options={})
         page = options.delete(:page) || @page
+        unless page.is_a?(StaticPage)
+          page = @site.find_pages(page)
+        end
         return "" if page.nil? or page.children.empty?
 
         levels_max = options[:levels] || 1
@@ -137,6 +114,8 @@ module Amber
         menu       = submenu_for_page(page)
         if menu && menu.children.any?
           children = menu.children
+        elsif options[:order_by]
+          children = page.children.order_by(*options[:order_by])
         else
           children = page.children
         end
@@ -152,11 +131,17 @@ module Amber
               haml :p, summary
             end
             if options[:include_toc]
-              toc_html = render_toc(child_page, :href_base => page_path(child_page))
+              toc_html = render_toc(child_page)
               haml toc_html
             end
             if level < levels_max
-              haml child_summaries({:page => child_page, :levels => levels_max, :level => level+1, :include_toc => options[:include_toc]})
+              haml(child_summaries({
+                :page => child_page,
+                :levels => levels_max,
+                :level => level+1,
+                :include_toc => options[:include_toc],
+                :order_by => options[:order_by]
+              }))
             end
           end
         end
