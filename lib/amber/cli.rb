@@ -7,33 +7,33 @@ module Amber
       @root    = File.expand_path(root)
     end
 
-    def init
+    def init(options)
       puts 'not yet implemented'
     end
 
-    def build
+    def build(options)
       site = Site.new(@root)
       site.load_pages
       site.render
     end
 
-    def clear
+    def clear(options)
       site = Site.new(@root)
       site.clear
     end
 
-    def clean
+    def clean(options)
       clear
     end
 
-    def rebuild
+    def rebuild(options)
       clear
       build
     end
 
-    def server
+    def server(options)
       site = Site.new(@root)
-      Amber::Server.start(:port => 8000, :site => site)
+      Amber::Server.start(:port => (options[:port] || 8000), :site => site)
     end
 
   end
