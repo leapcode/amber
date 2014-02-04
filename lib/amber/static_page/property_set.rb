@@ -37,20 +37,32 @@ module Amber
       # the @this properties are non-inheritable. If `inheritable_only` is true, we don't consider them
       # when returning the property value.
       #
-      def get(var_name, inheritable_only=false)
+      def get(property_name, inheritable_only=false)
         if inheritable_only || @this.nil?
-          instance_variable_get("@#{var_name}")
+          instance_variable_get("@#{property_name}")
         else
-          value = @this.get(var_name, false)
+          value = @this.get(property_name)
           if value.nil?
-            value = instance_variable_get("@#{var_name}")
+            value = instance_variable_get("@#{property_name}")
           end
           value
         end
       end
 
-      def set(var_name, value)
-        instance_variable_set("@" + var_name.to_s.sub(/=$/, ''), value)
+      #
+      # set the value of a property
+      #
+      # if the property has a non-nil value set in the @this prop set, then we set it there.
+      # otherwise, it is set in the inheritable set.
+      #
+      def set(property_name, value)
+        property_name = property_name.to_s.sub(/=$/, '')
+        instance_variable = "@" + property_name
+        if @this.nil? || @this.get(property_name).nil?
+          instance_variable_set(instance_variable, value)
+        else
+          @this.instance_variable_set(instance_variable, value)
+        end
       end
 
       def to_s
