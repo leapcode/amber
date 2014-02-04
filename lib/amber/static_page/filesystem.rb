@@ -12,7 +12,7 @@ module Amber
     public
 
     #
-    # recursively decends the directory tree, yielding pages and directories it encounters.
+    # Recursively decends the directory tree, yielding pages and directories it encounters.
     #
     # yield has two arguments:
     #
@@ -24,32 +24,26 @@ module Amber
     # this is NOT thread safe
     #
     def self.scan_directory_tree(parent_page, absolute_dir_path, relative_dir_path, &block)
-      Dir.chdir(absolute_dir_path) do
-        Dir.glob("*").each do |child_path|
-          abs_path = File.join(absolute_dir_path, child_path)
-          rel_path = File.join(relative_dir_path, child_path)
-          if parent_page && is_directory_page?(child_path)
-            child_page = StaticPage.new(parent_page, child_path)
-            yield child_page, nil
-            scan_directory_tree(child_page, abs_path, rel_path, &block)
-          elsif parent_page && is_simple_page?(child_path)
-            child_page = StaticPage.new(parent_page, child_path)
-            yield child_page, nil
-          elsif File.directory?(child_path)
-            yield nil, rel_path
-            scan_directory_tree(nil, abs_path, rel_path, &block)
-          end
+      Dir.foreach(absolute_dir_path).each do |child_path|
+        next if child_path =~ /^\./
+        abs_path = File.join(absolute_dir_path, child_path)
+        rel_path = File.join(relative_dir_path, child_path)
+        if parent_page && is_directory_page?(abs_path)
+          child_page = StaticPage.new(parent_page, child_path)
+          yield child_page, nil
+          scan_directory_tree(child_page, abs_path, rel_path, &block)
+        elsif parent_page && is_simple_page?(abs_path)
+          child_page = StaticPage.new(parent_page, child_path)
+          yield child_page, nil
+        elsif File.directory?(abs_path)
+          yield nil, rel_path
+          scan_directory_tree(nil, abs_path, rel_path, &block)
         end
       end
     end
 
-    #
-    # wrap an initial chdir here so that all paths returned for directories are relative.
-    #
     def scan_directory_tree(&block)
-      #Dir.chdir(self.file_path) do
-        StaticPage.scan_directory_tree(self, self.file_path, File.join(self.path), &block)
-      #end
+      StaticPage.scan_directory_tree(self, self.file_path, File.join(self.path), &block)
     end
 
     #
@@ -129,13 +123,14 @@ module Amber
     # * we exclude file names that are locales.
     # * we exclude partials
     #
-    def self.is_simple_page?(name)
+    def self.is_simple_page?(absolute_path)
+      name = File.basename(absolute_path)
       name =~ /\.#{PAGE_SUFFIXES_RE}$/ && name !~ LOCALE_FILE_MATCH_RE && name !~ /^_/
     end
 
-    def self.is_directory_page?(name)
-      if File.directory?(name)
-        Dir.glob(name + '/' + LOCALE_FILE_MATCH_GLOB).each do |file|
+    def self.is_directory_page?(absolute_path)
+      if File.directory?(absolute_path)
+        Dir.glob(absolute_path + '/' + LOCALE_FILE_MATCH_GLOB).each do |file|
           return true
         end
       end
