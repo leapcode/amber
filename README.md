@@ -5,6 +5,13 @@ Amber is a super simple and flexible static website generator, with good support
 
 This is still experimental code.
 
+Amber has much in common with other static page generators, but has several features that make it unique:
+
+* I18n: Primary focus is on very good multi-lingual and localization support.
+* Inheritance: Properties are inherited in the page hierarchy.
+* TOC: Support for table of contents (including inserting TOC into other pages).
+* Flexible: Ability to set custom page path aliases, render partials, rich navigation, and so on.
+
 Directory structure
 ---------------------------------
 
@@ -87,3 +94,6 @@ Available properties:
 * `@toc` -- If set to `false`, don't include a table of contents when rendering the file. This only applies to .rst and .md files.
 * `@layout` -- Manually set the layout template to use for rendering this page.
 * `@author` -- The author credit for the page.
+* `@this.alias` -- Alternate paths for the page to be rendered on. May be an array. The first path will be used when linking.
+
+To make a property none-inheritable, specify it like so: `@this.layout = 'home'`. For some properties, like `alias`, it does not make sense for the property to be inheritable.
