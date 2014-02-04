@@ -146,8 +146,7 @@ module Amber
           end
         end
       rescue Exception => exc
-        puts exc
-        puts exc.backtrace
+        Amber.log_exception(exc)
       end
 
       private

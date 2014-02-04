@@ -30,7 +30,8 @@ module Amber
         else
           File.link(src_file, dst_file)
         end
-      rescue SystemCallError
+      rescue SystemCallError => exc
+        Amber.log_exception(exc)
       end
 
       def self.render_dir(src_dir, dst_dir)

@@ -19,13 +19,15 @@ module Amber
     :zh => ['中文',       'zh', 1, false],
     :es => ['Español',   'es', 2, false],
     :en => ['English',   'en', 3, false],
+    :hi => ['Hindi',     'hi', 4, false],
     :ar => ['العربية',   'ar', 5, true],
     :pt => ['Português', 'pt', 6, false],
     :ru => ['Pyccĸий',   'ru', 7, false],
     :de => ['Deutsch',   'de', 8, false],
     :fr => ['Français',  'fr', 10, false],
     :it => ['Italiano',  'it', 11, false],
-    :el => ['Ελληνικά',  'el', 20, false]
+    :el => ['Ελληνικά',  'el', 20, false],
+    :ca => ['Català',    'ca', 101, false]
   }
 
   # Although everywhere else we use symbols for locales, this array should be strings:
@@ -49,6 +51,7 @@ end
 
 require 'amber/cli'
 require 'amber/server'
+require 'amber/logger'
 
 require 'amber/menu'
 require 'amber/site'

@@ -28,6 +28,8 @@ module Amber
         @site = site
         @stack = []
         @locals = {}
+        @this = StaticPage::PropertySet.new # TODO: come up with a better way to handle this.
+                                            # @this is not actually used, it is just there so haml headers don't bomb out.
       end
 
       #
@@ -64,7 +66,7 @@ module Amber
           return msg
         }
       rescue Exception => exc
-        Amber.logger.error(exc)
+        Amber.log_exception(exc)
       ensure
         pop_locals
       end
