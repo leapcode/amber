@@ -54,7 +54,22 @@ module Amber
     end
 
     def find_pages(filter)
-      StaticPage.find(self, filter)
+     filter = filter.downcase
+     if filter =~ /\//
+        path = filter.split('/').map{|segment| segment.gsub(/[^0-9a-z_-]/, '')}
+        path_str = path.join('/')
+        if (page = @pages_by_path[path_str])
+          page
+        elsif matched_path = @page_paths.grep(/#{Regexp.escape(path_str)}/).first
+          @pages_by_path[matched_path]
+        elsif page = @pages_by_name[path.last]
+          page
+        else
+          nil
+        end
+      else
+        @pages_by_name[filter]
+      end
     end
 
     def find_page(filter)
@@ -99,6 +114,7 @@ module Amber
         add_page(page) if page
         @dir_list << asset_dir if asset_dir
       end
+      @page_paths = @pages_by_path.keys
     end
 
     def add_page(page)

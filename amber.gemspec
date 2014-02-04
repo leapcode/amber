@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "amber"
-  s.version     = "0.2.1"
+  s.version     = "0.2.2"
   s.summary     = "Static website generator"
   s.description = "Amber is a super simple and super flexible static website generator with support for nice localization and navigation."
   s.authors     = ["Elijah Sparrow"]
@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'i18n'
   s.add_runtime_dependency 'haml'
   s.add_runtime_dependency 'RedCloth'
-  #s.add_runtime_dependency 'rbst'
   s.add_runtime_dependency 'rdiscount'
   s.add_runtime_dependency 'tilt', '>= 2.0.0'
   s.add_runtime_dependency 'sass', '~> 3.2'

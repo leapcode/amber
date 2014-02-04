@@ -21,24 +21,6 @@ module Amber
     attr_reader :props      # set of page properties (PropertySet)
 
     ##
-    ## CLASS METHODS
-    ##
-
-    def self.find(site, filter)
-      if filter =~ /\//
-        path = filter.split('/').map{|segment| segment.gsub(/[^0-9a-z_-]/, '')}
-        page = site.find_page_by_path(path.join('/'))
-        if page
-          return page
-        else
-          return site.find_page_by_name(path.last)
-        end
-      else
-        site.find_page_by_name(filter)
-      end
-    end
-
-    ##
     ## INSTANCE METHODS
     ##
 
