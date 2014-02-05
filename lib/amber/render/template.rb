@@ -85,7 +85,7 @@ module Amber
       #
       # takes raw markup, and replaces every <%= x %> with a
       # markup-safe placeholder. erb_tags holds a map of placeholder
-      # to original erb. e.g. {"ERBTAG0" => "<%= 'hi' %>"}
+      # to original erb. e.g. {"ERBTAG0" => "<%= 'hi]]"}
       #
       def replace_erb_tags(content)
         counter = 0
@@ -140,6 +140,9 @@ module Amber
             toc_html = generate_toc_from_textile(content)
             content  = add_toc_links_to_textile(content)
           end
+          content = Bracketlink.bracket_link(content) do |from, to|
+            view.link({from => to})
+          end
           html = RedCloth.new(content).to_html
           html = Autolink.auto_link(html)
           if toc != false
@@ -156,6 +159,9 @@ module Amber
       end
 
       def render_markdown(view, content)
+        content = Bracketlink.bracket_link(content) do |from, to|
+          view.link({from => to})
+        end
         rd = RDiscount.new(content, :smart, :generate_toc, :autolink)
         html = rd.to_html
         if !@partial
