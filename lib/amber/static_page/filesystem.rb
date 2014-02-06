@@ -21,8 +21,6 @@ module Amber
     #
     # Directory paths are dirs in the tree that don't contain any pages.
     #
-    # this is NOT thread safe
-    #
     def self.scan_directory_tree(parent_page, absolute_dir_path, relative_dir_path, &block)
       Dir.foreach(absolute_dir_path).each do |child_path|
         next if child_path =~ /^\./
@@ -30,11 +28,15 @@ module Amber
         rel_path = File.join(relative_dir_path, child_path)
         if parent_page && is_directory_page?(abs_path)
           child_page = StaticPage.new(parent_page, child_path)
-          yield child_page, nil
-          scan_directory_tree(child_page, abs_path, rel_path, &block)
+          if child_page.valid?
+            yield child_page, nil
+            scan_directory_tree(child_page, abs_path, rel_path, &block)
+          end
         elsif parent_page && is_simple_page?(abs_path)
           child_page = StaticPage.new(parent_page, child_path)
-          yield child_page, nil
+          if child_page.valid?
+            yield child_page, nil
+          end
         elsif File.directory?(abs_path)
           yield nil, rel_path
           scan_directory_tree(nil, abs_path, rel_path, &block)

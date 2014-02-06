@@ -29,7 +29,7 @@ module Amber
         else
           klass = options[:class] if options
         end
-        if name =~ /^#/ || name =~ /^http/
+        if name =~ /^#/ || name =~ /^http/ || name =~ /\./
           path = name
           label ||= name
         else
@@ -48,7 +48,7 @@ module Amber
             puts "warning: dead link to `#{name_without_anchor}` from page `/#{I18n.locale}/#{@page.path.join('/')}`"
             label ||= name_without_anchor
             label += ' [dead link]'
-            path = '/'
+            path = name_without_anchor
           end
         end
         if klass

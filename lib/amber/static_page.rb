@@ -16,18 +16,24 @@ module Amber
       :mount_point,         # associated SiteConfiguration
       :site,                # associated Site
       :locales,             # currently unused
-      :locale               # if the source page is only in a single locale
+      :locale,              # if the source page is only in a single locale
+      :valid                # `false` if there is some problem with this page.
 
     attr_reader :props      # set of page properties (PropertySet)
+
+    alias_method :valid?, :valid
 
     ##
     ## INSTANCE METHODS
     ##
 
+    FORBIDDEN_PAGE_CHARS_RE = /[A-Z\.\?\|\[\]\{\}\$\^\*~!@#%&='"<>]/
+
     def initialize(parent, name, file_path=nil)
-      @children = PageArray.new  # array of StaticPages
+      @valid     = true
+      @children  = PageArray.new  # array of StaticPages
       @nav_title = {} # key is locale
-      @title = {}     # key is locale
+      @title     = {} # key is locale
 
       @name, @locale, @suffix = parse_source_file_name(name)
 
@@ -39,6 +45,11 @@ module Amber
         @path = [@parent.path, @name].flatten.compact
       else
         @path = []
+      end
+
+      if @name =~ FORBIDDEN_PAGE_CHARS_RE
+        Amber.logger.error "Illegal page name #{@name} at path /#{self.path.join('/')} -- must not have symbols, uppercase, or periods."
+        @valid = false
       end
 
       # set the @file_path
