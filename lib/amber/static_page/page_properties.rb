@@ -79,7 +79,7 @@ module Amber
       end
 
       #
-      # like get_var, but does not allow inheritance
+      # like prop(), but does not allow inheritance
       #
       def prop_without_inheritance(locale, var_name)
         properties = @locales[locale.to_sym]
@@ -88,6 +88,19 @@ module Amber
         else
           nil
         end
+      end
+
+      #
+      # like prop_without_inheritance, but defaults to default_locale and tries multiple properties
+      #
+      def prop_with_fallback(locale, var_names)
+        [locale, I18n.default_locale].each do |l|
+          var_names.each do |var|
+            value = prop_without_inheritance(l, var)
+            return value if value
+          end
+        end
+        return nil
       end
 
       def set_prop(locale, var_name, value)

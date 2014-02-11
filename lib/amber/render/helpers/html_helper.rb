@@ -42,7 +42,7 @@ module Amber
           end
           page = @site.find_page(name_without_anchor)
           if page
-            label ||= page.title
+            label ||= page.nav_title
             path = page_path(page) + anchor
           else
             puts "warning: dead link to `#{name_without_anchor}` from page `/#{I18n.locale}/#{@page.path.join('/')}`"

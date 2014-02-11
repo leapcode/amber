@@ -83,19 +83,13 @@ module Amber
 
     def title(locale=I18n.locale)
       @title[locale] ||= begin
-        @props.prop_without_inheritance(locale, :title) ||
-        @props.prop_without_inheritance(locale, :nav_title) ||
-        @name
+        @props.prop_with_fallback(locale, [:title, :nav_title]) || @name
       end
     end
 
     def nav_title(locale=I18n.locale)
       @nav_title[locale] ||= begin
-        @props.prop_without_inheritance(locale, :nav_title) ||
-        @props.prop_without_inheritance(locale, :title) ||
-        @props.prop_without_inheritance(I18n.default_locale, :nav_title) ||
-        @props.prop_without_inheritance(I18n.default_locale, :title) ||
-        @name
+        @props.prop_with_fallback(locale, [:nav_title, :title]) || @name
       end
     end
 
