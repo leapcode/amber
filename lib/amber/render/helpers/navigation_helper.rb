@@ -99,6 +99,7 @@ module Amber
       #   :page           -- StaticPage instance or nil
       #   :include_toc    -- true or false
       #   :order_by       -- arguments to PageArray#order_by
+      #   :heading        -- heading level to use
       #
       def child_summaries(options={})
         page = options.delete(:page) || @page
@@ -109,7 +110,7 @@ module Amber
 
         levels_max = options[:levels] || 1
         level      = options.delete(:level) || 1
-        heading    = level + 2 - levels_max
+        heading    = options.delete(:heading) || 2
         locale     = @locals[:locale]
         menu       = submenu_for_page(page)
         if menu && menu.children.any?
@@ -140,7 +141,8 @@ module Amber
                 :levels => levels_max,
                 :level => level+1,
                 :include_toc => options[:include_toc],
-                :order_by => options[:order_by]
+                :order_by => options[:order_by],
+                :heading => heading+1
               }))
             end
           end
