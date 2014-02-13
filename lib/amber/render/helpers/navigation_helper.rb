@@ -132,7 +132,7 @@ module Amber
               haml :p, summary
             end
             if options[:include_toc]
-              toc_html = render_toc(child_page)
+              toc_html = render_toc(child_page, :locale => locale)
               haml toc_html
             end
             if level < levels_max

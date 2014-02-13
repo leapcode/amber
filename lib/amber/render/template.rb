@@ -38,44 +38,44 @@ module Amber
       end
 
       #
-      # returns rendered content or title, depending on render_type
+      # returns rendered content or title, depending on render_mode
       #
-      def render(view, render_type=nil)
+      def render(view, options={})
         view.locals[:_type] = @type
+        render_mode = options.delete(:mode) || :content
+        toc = options.delete(:toc)
 
-        if render_type == :title
+        if render_mode == :title
           render_title(view)
-        elsif @type == :haml
-          render_haml(@file, view)
         else
-          # load content and strip out the property header
-          @content ||= File.read(@file).sub(PROPERTY_HEADER, '')
-
-          # render content
-          if method = RENDER_MAP[@type]
-            content, erb_tags = replace_erb_tags(@content)
-            html = self.send(method, view, content)
-            render_erb(restore_erb_tags(html, erb_tags), view)
+          html = render_html(view)
+          if render_mode == :toc
+            RegexTableOfContents.new(html, options).to_toc
+          elsif toc || render_mode == :toc_and_content
+            toc = RegexTableOfContents.new(html, options)
+            %(<div id="TOC">%s</div>\n\n%s) % [toc.to_toc, toc.to_html]
           else
-            "sorry, i don't understand how to render #{@type}"
+            html
           end
         end
       end
 
-      #
-      # same as render(), but only returns the table of contents, if available.
-      # used when we want to insert the toc from one page into the content of a different page.
-      #
-      def render_toc(view, options={})
-        @content ||= File.read(@file)
-        if method = RENDER_MAP[@type]
-          self.send(method + '_toc', view, @content, options)
+      private
+
+      def render_html(view)
+        if @type == :haml
+          return render_haml(@file, view)
         else
-          ""
+          @content ||= File.read(@file).sub(PROPERTY_HEADER, '')  # remove property header
+          if method = RENDER_MAP[@type]
+            content, erb_tags = replace_erb_tags(@content)
+            html = self.send(method, view, content)
+            return render_erb(restore_erb_tags(html, erb_tags), view)
+          else
+            return "sorry, i don't understand how to render #{@type}"
+          end
         end
       end
-
-      private
 
       def render_erb(string, view)
         template = Tilt::ERBTemplate.new {string}
@@ -119,90 +119,24 @@ module Amber
 
       def render_haml(file_path, view)
         template = Tilt::HamlTemplate.new(file_path, {:format => :html5})
-        template.render(view)
+        add_bracket_links(view, template.render(view))
       end
-
-      #def render_rbst(string, view, locale)
-      #  html = RbST.new(string).to_html
-      #  unless (title = view.page.explicit_title(locale)).nil?
-      #    html = "<h1 class=\"first\">#{title}</h1>\n\n" + html
-      #  end
-      #  return html
-      #end
 
       def render_textile(view, content)
-        if @partial
-          return RedCloth.new(content).to_html
-        else
-          locale = view.locals[:locale]
-          toc = view.page.prop(locale, :toc)
-          if toc != false
-            toc_html = generate_toc_from_textile(content)
-            content  = add_toc_links_to_textile(content)
-          end
-          content = Bracketlink.bracket_link(content) do |from, to|
-            view.link({from => to})
-          end
-          html = RedCloth.new(content).to_html
-          html = Autolink.auto_link(html)
-          if toc != false
-            return add_toc_to_html(html, toc_html)
-          else
-            return html
-          end
-        end
-      end
-
-      # render only the toc
-      def render_textile_toc(view, content, options)
-        generate_toc_from_textile(content, options)
+        content = add_bracket_links(view, content)
+        Autolink.auto_link(RedCloth.new(content).to_html)
       end
 
       def render_markdown(view, content)
+        content = add_bracket_links(view, content)
+        RDiscount.new(content, :smart, :autolink).to_html
+      end
+
+      def add_bracket_links(view, content)
         content = Bracketlink.bracket_link(content) do |from, to|
           view.link({from => to})
         end
-        rd = RDiscount.new(content, :smart, :generate_toc, :autolink)
-        html = rd.to_html
-        if !@partial
-          locale = view.locals[:locale]
-          if view.page.prop(locale, :toc) != false && rd.toc_content
-            html = add_toc_to_html(html, rd.toc_content)
-          end
-        end
-        return html
-      end
-
-      # render only the toc
-      def render_markdown_toc(view, content)
-        rd = RDiscount.new(content, :generate_toc)
-        rd.toc_content
-      end
-
-      def add_toc_to_html(html, toc)
-        "<div id=\"TOC\">%s</div>\n\n%s" % [toc.force_encoding('utf-8'), html]
-      end
-
-      def generate_toc_from_textile(content, options={})
-        toc = ""
-        base = options[:href_base] || ""
-        content.gsub(TEXTILE_TOC_RE) do |match|
-          heading_depth = $1
-          label = $2.gsub('"', '&quot;')
-          anchor = nameize_str(label)
-          indent = '#' * heading_depth.to_i
-          toc << %(#{indent} ["#{label}":#{base}##{anchor}]\n)
-        end
-        RedCloth.new(toc).to_html
-      end
-
-      def add_toc_links_to_textile(content)
-        content.gsub(TEXTILE_TOC_RE) do |match|
-          heading_depth = $1
-          label = $2
-          anchor = nameize_str(label)
-          %(\nh#{heading_depth}. <a name="#{anchor}"></a> #{label})
-        end
+        content
       end
 
       def type_from_file(file_path)
@@ -214,20 +148,6 @@ module Amber
         suffix
       end
 
-      #
-      # convert any string to one suitable for a url.
-      # resist the urge to translit non-ascii slugs to ascii.
-      # it is always much better to keep strings as utf8.
-      #
-      def nameize_str(str)
-        str = str.dup
-        str.gsub!(/&(\w{2,6}?|#[0-9A-Fa-f]{2,6});/,'') # remove html entitities
-        str.gsub!(/[^\w\+]+/, ' ') # all non-word chars to spaces
-        str.strip!            # ohh la la
-        str.downcase!         # upper case characters in urls are confusing
-        str.gsub!(/\ +/, '-') # spaces to dashes, preferred separator char everywhere
-        str
-      end
     end
   end
 end

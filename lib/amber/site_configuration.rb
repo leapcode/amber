@@ -14,6 +14,7 @@ module Amber
     attr_accessor :pagination_size
     attr_accessor :mount_points
     attr_accessor :locales
+    attr_accessor :default_locale
 
     attr_accessor :menu
 
@@ -70,6 +71,8 @@ module Amber
       @menu.load(@menu_file) if @menu_file
 
       self.eval
+      self.cleanup
+
       reset_timestamp
       Render::Layout.load(@layouts_dir)
     end
@@ -78,17 +81,17 @@ module Amber
     #  @mount_points << SiteMountPoint.new(self, directory_source, options)
     #end
 
-    def default_locale=(locale)
-      I18n.default_locale = locale
-      @locales ||= [locale]
-    end
-
-    def locales=(locale_array)
-      locale_array.each do |locale|
-        if Amber::POSSIBLE_LANGUAGE_CODES.include?(locale.to_s) && !@locale.index(locale.to_sym)
-          @locales << locale.to_sym
+    def cleanup
+      @locale ||= I18n.default_locale
+      I18n.default_locale = @locale
+      @locales ||= [@locale]
+      @locales.map! {|locale|
+        if Amber::POSSIBLE_LANGUAGE_CODES.include?(locale.to_s)
+          locale.to_sym
+        else
+          nil
         end
-      end
+      }.compact
     end
 
     def pages_changed?

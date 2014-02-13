@@ -13,4 +13,14 @@ class Minitest::Test
   def setup
   end
 
+  def load_yaml_docs(file)
+    filepath = File.dirname(__FILE__) + '/files/' + file
+    data = {}
+    YAML::load_documents(File.open(filepath)) do |doc|
+      key = doc.delete("name")
+      data[key] = doc
+    end
+    data
+  end
+
 end

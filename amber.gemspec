@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'haml'
   s.add_runtime_dependency 'RedCloth'
   s.add_runtime_dependency 'rdiscount'
+  s.add_runtime_dependency 'nokogiri', '~> 1.6.1'
   s.add_runtime_dependency 'tilt', '>= 2.0.0'
   s.add_runtime_dependency 'sass', '~> 3.2'
 end
-

@@ -1,0 +1,429 @@
+---
+name: fruity outline
+enabled: true
+style: body
+in: |-
+  h1. Fruits
+
+  h2. Tasty Apples
+
+  h3. Green
+
+  h3. Red
+
+  h2. Pears
+
+  h1. Vegetables
+
+  h2. Turnips
+
+  h2. Green Beans
+out: |-
+  <h1><a name="fruits"></a>Fruits</h1>
+  <h2><a name="tasty-apples"></a>Tasty Apples</h2>
+  <h3><a name="green"></a>Green</h3>
+  <h3><a name="red"></a>Red</h3>
+  <h2><a name="pears"></a>Pears</h2>
+  <h1><a name="vegetables"></a>Vegetables</h1>
+  <h2><a name="turnips"></a>Turnips</h2>
+  <h2><a name="green-beans"></a>Green Beans</h2>
+---
+name: numbered fruit
+enabled: true
+style: both
+options:
+  numeric_prefix: true
+  tag: ol
+in: |-
+  h1. Fruits
+
+  h2. Tasty Apples
+
+  h3. Green
+
+  h3. Red
+
+  h2. Pears
+
+  h1. Vegetables
+
+  h2. Turnips
+
+  h2. Green Beans
+out: |-
+  <ol>
+    <li>
+      <a href="#fruits">1 Fruits</a>
+      <ol>
+        <li>
+          <a href="#tasty-apples">1.1 Tasty Apples</a>
+          <ol>
+            <li>
+              <a href="#green">1.1.1 Green</a>
+            </li>
+            <li>
+              <a href="#red">1.1.2 Red</a>
+            </li>
+          </ol>
+        </li>
+        <li>
+          <a href="#pears">1.2 Pears</a>
+        </li>
+      </ol>
+    </li>
+    <li>
+      <a href="#vegetables">2 Vegetables</a>
+      <ol>
+        <li>
+          <a href="#turnips">2.1 Turnips</a>
+        </li>
+        <li>
+          <a href="#green-beans">2.2 Green Beans</a>
+        </li>
+      </ol>
+    </li>
+  </ol>
+  <h1><a name="fruits"></a>1 Fruits</h1>
+  <h2><a name="tasty-apples"></a>1.1 Tasty Apples</h2>
+  <h3><a name="green"></a>1.1.1 Green</h3>
+  <h3><a name="red"></a>1.1.2 Red</h3>
+  <h2><a name="pears"></a>1.2 Pears</h2>
+  <h1><a name="vegetables"></a>2 Vegetables</h1>
+  <h2><a name="turnips"></a>2.1 Turnips</h2>
+  <h2><a name="green-beans"></a>2.2 Green Beans</h2>
+---
+name: 20 questions toc
+enabled: true
+style: toc
+options:
+  tag: ul
+in: |-
+  h2. Fruits
+
+  h3. Tasty Apples
+
+  h4. Green
+
+  h4. Red
+
+  h3. Pears
+
+  h2. Vegetables
+
+  h3. Turnips
+
+  h3. Green Beans
+
+  h2. Minerals
+
+  h3. Zinc
+out: |-
+  <ul>
+    <li>
+      <a href="#fruits">Fruits</a>
+      <ul>
+        <li>
+          <a href="#tasty-apples">Tasty Apples</a>
+          <ul>
+            <li>
+              <a href="#green">Green</a>
+            </li>
+            <li>
+              <a href="#red">Red</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="#pears">Pears</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#vegetables">Vegetables</a>
+      <ul>
+        <li>
+          <a href="#turnips">Turnips</a>
+        </li>
+        <li>
+          <a href="#green-beans">Green Beans</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#minerals">Minerals</a>
+      <ul>
+        <li>
+          <a href="#zinc">Zinc</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+---
+name: test name collisions
+enabled: true
+in: |-
+  h1. Corvidae
+
+  h2. Crow
+
+  h2. Raven
+
+  h2. Rook
+
+  h1. Chess Pieces
+
+  h2. Queen
+
+  h2. Rook
+
+  h1. Card Games
+
+  h2. Hearts
+
+  h2. Rook
+
+out: |-
+  <h1><a name="corvidae"></a>Corvidae</h1>
+  <h2><a name="crow"></a>Crow</h2>
+  <h2><a name="raven"></a>Raven</h2>
+  <h2><a name="rook"></a>Rook</h2>
+  <h1><a name="chess-pieces"></a>Chess Pieces</h1>
+  <h2><a name="queen"></a>Queen</h2>
+  <h2><a name="rook-2"></a>Rook</h2>
+  <h1><a name="card-games"></a>Card Games</h1>
+  <h2><a name="hearts"></a>Hearts</h2>
+  <h2><a name="rook-3"></a>Rook</h2>
+---
+name: test with links
+enabled: true
+style: body
+in: |-
+  h1. Russian Anarchists
+
+  h2. Michel "Bakunin":http://en.wikipedia.org/wiki/Mikhail_Bakunin
+
+  h2. "Peter":http://en.wikipedia.org/wiki/Peter_Kropotkin Kropotkin
+
+  h1. Russian-American Anarchists
+
+  h2. "Emma Goldman":http://en.wikipedia.org/wiki/Emma_Goldman
+
+  h2. Alexander "Berkman":http://en.wikipedia.org/wiki/Alexander_Berkman
+out: |-
+  <h1><a name="russian-anarchists"></a>Russian Anarchists</h1>
+  <h2><a name="michel-bakunin"></a>Michel <a href="http://en.wikipedia.org/wiki/Mikhail_Bakunin">Bakunin</a></h2>
+  <h2><a name="peter-kropotkin"></a><a href="http://en.wikipedia.org/wiki/Peter_Kropotkin">Peter</a> Kropotkin</h2>
+  <h1><a name="russian-american-anarchists"></a>Russian-American Anarchists</h1>
+  <h2><a name="emma-goldman"></a><a href="http://en.wikipedia.org/wiki/Emma_Goldman">Emma Goldman</a></h2>
+  <h2><a name="alexander-berkman"></a>Alexander <a href="http://en.wikipedia.org/wiki/Alexander_Berkman">Berkman</a></h2>
+---
+name: test with links and anchors
+enabled: false
+style: body
+in: |-
+  h1. Russian Anarchists
+
+  h2. Michel "Bakunin":http://en.wikipedia.org/wiki/Mikhail_Bakunin
+
+  h2. "Peter":http://en.wikipedia.org/wiki/Peter_Kropotkin Kropotkin
+
+  h1. Russian-American Anarchists
+
+  h2. "Emma Goldman":http://en.wikipedia.org/wiki/Emma_Goldman
+
+  h2. Alexander "Berkman":http://en.wikipedia.org/wiki/Alexander_Berkman
+out: |-
+  <h1><a name="russian-anarchists"></a>Russian Anarchists<a href="#russian-anarchists"></a></h1>
+  <h2><a name="michel-bakunin"></a>Michel <a href="http://en.wikipedia.org/wiki/Mikhail_Bakunin">Bakunin</a><a href="#michel-bakunin"></a></h2>
+  <h2><a name="peter-kropotkin"></a><a href="http://en.wikipedia.org/wiki/Peter_Kropotkin">Peter</a> Kropotkin<a href="#peter-kropotkin"></a></h2>
+  <h1><a name="russian-american-anarchists"></a>Russian-American Anarchists<a href="#russian-american-anarchists"></a></h1>
+  <h2><a name="emma-goldman"></a><a href="http://en.wikipedia.org/wiki/Emma_Goldman">Emma Goldman</a><a href="#emma-goldman"></a></h2>
+  <h2><a name="alexander-berkman"></a>Alexander <a href="http://en.wikipedia.org/wiki/Alexander_Berkman">Berkman</a><a href="#alexander-berkman"></a></h2>
+---
+name: double trouble
+enabled: true
+style: body
+in: |-
+  h1. Title
+
+  h3. Under first
+
+  h1. Title
+
+  h3. Under second
+out: |-
+  <h1><a name="title"></a>Title</h1>
+  <h3><a name="under-first"></a>Under first</h3>
+  <h1><a name="title-2"></a>Title</h1>
+  <h3><a name="under-second"></a>Under second</h3>
+---
+name: weird chars
+enabled: true
+style: body
+in: |-
+  h1. i eat foød
+
+  h1. it is yŭmmy
+out: |-
+  <h1><a name="i-eat-fo%C3%B8d"></a>i eat foød</h1>
+  <h1><a name="it-is-y%C5%ADmmy"></a>it is yŭmmy</h1>
+---
+name: badly organized fruits
+enabled: true
+style: both
+options:
+  tag: ul
+in: |-
+  h1. Fruits
+
+  h3. Green Apples
+
+  h2. Tasty Apples
+
+  h2. Pears
+
+  h1. Vegetables
+
+  h2. Turnips
+
+  h2. Green Beans
+out: |-
+  <ul>
+    <li>
+      <a href="#fruits">Fruits</a>
+      <ul>
+        <li>
+          <a href="#green-apples">Green Apples</a>
+        </li>
+        <li>
+          <a href="#tasty-apples">Tasty Apples</a>
+        </li>
+        <li>
+          <a href="#pears">Pears</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="#vegetables">Vegetables</a>
+      <ul>
+        <li>
+          <a href="#turnips">Turnips</a>
+        </li>
+        <li>
+          <a href="#green-beans">Green Beans</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+  <h1><a name="fruits"></a>Fruits</h1>
+  <h3><a name="green-apples"></a>Green Apples</h3>
+  <h2><a name="tasty-apples"></a>Tasty Apples</h2>
+  <h2><a name="pears"></a>Pears</h2>
+  <h1><a name="vegetables"></a>Vegetables</h1>
+  <h2><a name="turnips"></a>Turnips</h2>
+  <h2><a name="green-beans"></a>Green Beans</h2>
+---
+name: untitled leading section
+in: |-
+
+  welcome to our great list of fruits and vegetables
+
+  h1. Fruits
+
+  h2. Pears
+
+  h1. Vegetables
+
+  h2. Green Beans
+out: |-
+  <p>welcome to our great list of fruits and vegetables</p>
+  <h1><a name="fruits"></a>Fruits<a href="#fruits"></a></h1>
+  <h2><a name="pears"></a>Pears<a href="#pears"></a></h2>
+  <h1><a name="vegetables"></a>Vegetables<a href="#vegetables"></a></h1>
+  <h2><a name="green-beans"></a>Green Beans<a href="#green-beans"></a></h2>
+---
+name: overdecorated
+enabled: true
+style: body
+in: |-
+  h2. _emphasis_
+
+  h2. __italicized__
+
+  h2. *strong*
+
+  h2. **bold**
+
+  h2. ??citation??
+
+  h2. -deleted text-
+
+  h2. +inserted text+
+
+  h2. ^superscript^
+
+  h2. ~subscript~
+
+  h2. @code@
+
+out: |-
+  <h2><a name="emphasis"></a><em>emphasis</em></h2>
+  <h2><a name="italicized"></a><i>italicized</i></h2>
+  <h2><a name="strong"></a><strong>strong</strong></h2>
+  <h2><a name="bold"></a><b>bold</b></h2>
+  <h2><a name="citation"></a><cite>citation</cite></h2>
+  <h2><a name="deleted-text"></a><del>deleted text</del></h2>
+  <h2><a name="inserted-text"></a><ins>inserted text</ins></h2>
+  <h2><a name="superscript"></a><sup>superscript</sup></h2>
+  <h2><a name="subscript"></a><sub>subscript</sub></h2>
+  <h2><a name="code"></a><code>code</code></h2>
+---
+name: headings with class
+enabled: true
+style: body
+in: |-
+  h1(first). first heading
+
+  h1. second heading
+out: |-
+  <h1 class="first"><a name="first-heading"></a>first heading</h1>
+  <h1><a name="second-heading"></a>second heading</h1>
+---
+name: href toc
+enabled: true
+style: toc
+options:
+  href_base: "https://bitmask.net/"
+in: |-
+  h1. first heading
+
+  h2. second heading
+out: |-
+  <ol>
+    <li>
+      <a href="https://bitmask.net/#first-heading">first heading</a>
+      <ol>
+        <li>
+          <a href="https://bitmask.net/#second-heading">second heading</a>
+        </li>
+      </ol>
+    </li>
+  </ol>
+---
+name: headings with existing anchors
+enabled: true
+style: toc
+in: |-
+  <h2><a name="heading-a"></a>Heading A</h2>
+  <h3><a name="heading-b"></a>Heading B</h3>
+out: |-
+  <ol>
+    <li>
+      <a href="#heading-a">Heading A</a>
+      <ol>
+        <li>
+          <a href="#heading-b">Heading B</a>
+        </li>
+      </ol>
+    </li>
+  </ol>

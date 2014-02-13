@@ -36,65 +36,52 @@ module Amber
       # more or less the same as Rails render()
       #
       # supported options:
+      #   :page    -- page path or page object to render
       #   :file    -- renders the file specified, using suffix to determine type.
       #   :partial -- same as :file, but disables layout
-      #   :text -- string to render
-      #   :type -- required for :text
+      #   :text    -- string to render
+      #   :type    -- required for :text
       #
-      def render(options={}, locals={}, &block)
-        push_locals(locals)
-        locale = I18n.locale
-        if options.is_a? String
-          options = {:partial => options}
-        end
-        if options[:partial]
-          template = Template.new(file: find_file(partialize(options[:partial]), locale), partial: true)
-        elsif options[:file]
-          template = Template.new(file: find_file(options[:file], locale))
-        elsif options[:text]
-          template = Template.new(content: options[:text], type: options[:type])
-        end
-        if options[:layout] && !options[:partial]
-          layout = Render::Layout[options[:layout]]
-          layout.render(self) { |layout_yield_argument| template.render(self, layout_yield_argument) }
+      def render(options={}, locals={}, toc_only=false, &block)
+        push_context @locals, @page
+        @locals    = @locals.merge(locals)
+        locale     = I18n.locale = @locals[:locale]
+        options    = parse_render_options(locale, options)
+        @page      = options[:page] if options[:page]
+        render_toc = should_render_toc?(locale, options, @page)
+        template   = pick_template(locale, options)
+        if toc_only
+          template.render(self, :mode => :toc, :href_base => options[:href_base])
         else
-          template.render(self)
+          layout = pick_layout(locale, options)
+          if layout
+            layout.render(self) do |layout_yield_argument|
+              template.render(self, :mode => layout_yield_argument, :toc => render_toc)
+            end
+          else
+            template.render(self, :mode => :content, :toc => render_toc)
+          end
         end
-      rescue MissingTemplate
-        "ERROR: render() could not find file from #{options.inspect}".tap {|msg|
-          Amber.logger.error(msg)
-          return msg
-        }
-      rescue Exception => exc
-        Amber.log_exception(exc)
+      rescue StandardError => exc
+        report_error(exc, options)
       ensure
-        pop_locals
+        @locals, @page = pop_context
+        I18n.locale = @locals[:locale]
       end
 
-      def render_toc(page, options={})
-        unless page.is_a?(StaticPage)
-          page = @site.find_pages(page)
-        end
-        if page
-          locale = @locals[:locale]
-          file   = page.content_file(locale)
-          template = Template.new(file: file)
-          options[:href_base] ||= page_path(page, locale)
-          template.render_toc(self, options)
-        else
-          ""
-        end
+      def render_toc(options={}, locals={})
+        render(options, locals, true)
       end
 
       private
 
-      def find_file(path, locale)
+      def find_file(path, site, page, locale)
         search = [
           path,
-          "#{@site.pages_dir}/#{path}",
-          "#{@page.file_path}/#{path}",
-          "#{File.dirname(@page.file_path)}/#{path}",
-          "#{@site.config_dir}/#{path}"
+          "#{site.pages_dir}/#{path}",
+          "#{page.file_path}/#{path}",
+          "#{File.dirname(page.file_path)}/#{path}",
+          "#{site.config_dir}/#{path}"
         ]
         search.each do |path|
           return path if File.exists?(path)
@@ -112,17 +99,87 @@ module Amber
         File.dirname(path) + "/_" + File.basename(path)
       end
 
-      def push_locals(locals)
-        @stack.push(@locals)
-        @locals = @locals.merge(locals)
-        I18n.locale = @locals[:locale]
+      def push_context(locals, page)
+        @stack.push([locals, page])
       end
 
-      def pop_locals
-        @locals = @stack.pop
-        I18n.locale = @locals[:locale]
+      def pop_context
+        @stack.pop
       end
 
+      #
+      # cleans up the `options` arg that is passed to render()
+      #
+      def parse_render_options(locale, options)
+        # handle non-hash options
+        if options.is_a?(String)
+          page = @site.find_page(options)
+          if page
+            options = {:page => page}
+          else
+            options = {:partial => options}
+          end
+        elsif options.is_a?(StaticPage)
+          options = {:page => options}
+        end
+
+        # convert :page, :partial, or :file to the real deal
+        if options[:page]
+          if options[:page].is_a?(String)
+            options[:page] = @site.find_page(options[:page])
+          end
+          options[:href_base] ||= page_path(options[:page], locale)
+        elsif options[:partial]
+          options[:partial] = find_file(partialize(options[:partial]), @site, @page, locale)
+        elsif options[:file]
+          options[:file] = find_file(options[:file], @site, @page, locale)
+        end
+        return options
+      end
+
+      def should_render_toc?(locale, options, page)
+        if options[:partial].nil?
+          if page.prop(locale, :toc).nil?
+            true
+          else
+            page.prop(locale, :toc)
+          end
+        else
+          false
+        end
+      end
+
+      def pick_template(locale, options)
+        if options[:page]
+          Template.new(file: options[:page].content_file(locale))
+        elsif options[:file]
+          Template.new(file: options[:file])
+        elsif options[:partial]
+          Template.new(file: options[:partial], partial: true)
+        elsif options[:text]
+          Template.new(content: options[:text], type: options[:type])
+        end
+      end
+
+      def pick_layout(locale, options)
+        if options[:layout] && !options[:partial]
+          Render::Layout[options[:layout]]
+        else
+          nil
+        end
+      end
+
+      def report_error(exc, options)
+        if exc.is_a? MissingTemplate
+          msg = "ERROR: render() could not find file from #{options.inspect}"
+          Amber.logger.error(msg)
+          Amber.log_exception(exc)
+          "<pre>%s</pre>" % [msg, exc, exc.backtrace].flatten.join("\n")
+        else
+          Amber.log_exception(exc)
+          "<pre>%s</pre>" % [exc, exc.backtrace].flatten.join("\n")
+        end
+      end
     end
   end
 end
