@@ -53,6 +53,13 @@ module Amber
       end
     end
 
+    def with_destination(new_dest)
+      dest_dir = @config.dest_dir
+      @config.dest_dir = new_dest
+      yield
+      @config.dest_dir = dest_dir
+    end
+
     def find_pages(filter)
      filter = filter.downcase
      if filter =~ /\//
