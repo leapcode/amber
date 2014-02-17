@@ -14,8 +14,8 @@ module Amber
   end
 
   def self.log_exception(e)
-    @logger.error(e)
-    @logger.error(e.backtrace.join("\n       "))
+    Amber.logger.error(e)
+    Amber.logger.error(e.backtrace.join("\n       "))
   end
 
 end
