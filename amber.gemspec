@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Elijah Sparrow"]
   s.email       = ["elijah@riseup.net"]
   s.files       = Dir["{lib}/**/*.rb", "bin/*", "LICENSE", "*.md"]
-  s.homepage    = "https://github.com/elijh/amber"
+  s.homepage    = "https://github.com/leapcode/amber"
   s.license     = "AGPL"
   s.executables << 'amber'
   s.bindir      = 'bin'
@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'i18n'
   s.add_runtime_dependency 'haml'
+  s.add_runtime_dependency 'haml-contrib'
   s.add_runtime_dependency 'RedCloth'
   s.add_runtime_dependency 'rdiscount'
   s.add_runtime_dependency 'nokogiri', '~> 1.6.1'
