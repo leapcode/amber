@@ -12,6 +12,21 @@ Amber has much in common with other static page generators, but has several feat
 * TOC: Support for table of contents (including inserting TOC into other pages).
 * Flexible: Ability to set custom page path aliases, render partials, rich navigation, and so on.
 
+Installation
+---------------------------------
+
+Installing from gem:
+
+    sudo gem install amber
+
+Installing from source:
+
+    sudo gem install bundler
+    git clone https://github.com/leapcode/amber
+    cd amber
+    bundle install
+    sudo ln -s `pwd`/bin/amber /usr/local/bin
+
 Directory structure
 ---------------------------------
 
