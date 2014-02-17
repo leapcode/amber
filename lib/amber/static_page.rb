@@ -16,7 +16,6 @@ module Amber
       :mount_point,         # associated SiteConfiguration
       :site,                # associated Site
       :locales,             # currently unused
-      :locale,              # if the source page is only in a single locale
       :valid                # `false` if there is some problem with this page.
 
     attr_reader :props      # set of page properties (PropertySet)
@@ -35,7 +34,7 @@ module Amber
       @nav_title = {} # key is locale
       @title     = {} # key is locale
 
-      @name, @locale, @suffix = parse_source_file_name(name)
+      @name, @suffix = parse_source_file_name(name)
 
       # set @parent & @path
       if parent
@@ -61,9 +60,7 @@ module Amber
         raise 'file path must be specified or in parent'
       end
 
-      # discover supported locales
       @simple_page = !File.directory?(@file_path)
-      #@locales = find_locales()
 
       # eval the property headers, if any
       @props = load_properties()

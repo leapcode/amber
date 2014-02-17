@@ -105,16 +105,18 @@ module Amber
     private
 
     # e.g. en, de, pt
-    LOCALES_RE  = /(#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})/
+    LOCALES_RE  = /(?<locale>#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})/
     LOCALES_GLOB = "{#{Amber::POSSIBLE_LANGUAGE_CODES.join(',')}}"
 
     # e.g. haml, md, text
-    PAGE_SUFFIXES_RE = /(#{Amber::PAGE_SUFFIXES.join('|')})/
+    PAGE_SUFFIXES_RE = /(?<suffix>#{Amber::PAGE_SUFFIXES.join('|')})/
     PAGE_SUFFIXES_GLOB = "{#{Amber::PAGE_SUFFIXES.join(',')}}"
 
     # e.g. en.haml or es.md or index.pt.text
     LOCALE_FILE_MATCH_RE = /^(index\.)?#{LOCALES_RE}\.#{PAGE_SUFFIXES_RE}$/
     LOCALE_FILE_MATCH_GLOB = "{index.,}#{LOCALES_GLOB}.#{PAGE_SUFFIXES_GLOB}"
+
+    SIMPLE_FILE_MATCH_RE = lambda {|name| /^(#{Regexp.escape(name)})(\.#{LOCALES_RE})?\.#{PAGE_SUFFIXES_RE}$/ }
 
     #
     # returns true if the name of a file could be a 'simple' static page
@@ -140,16 +142,15 @@ module Amber
     end
 
     #
-    # returns [name, locale, suffix]
+    # returns [name, suffix]
     # called on new page initialization
     #
     def parse_source_file_name(name)
-      matches = name.match(/^(.*?)(\.#{LOCALES_RE})?(\.#{PAGE_SUFFIXES_RE})$/)
+      matches = name.match(/^(?<name>.*?)(\.#{LOCALES_RE})?(\.#{PAGE_SUFFIXES_RE})$/)
       if matches
-        locale = matches[3] ? matches[3].to_sym : nil
-        [matches[1], locale, matches[4]]
+        [matches['name'], matches['suffix']]
       else
-        [name, nil, nil]
+        [name, nil]
       end
     end
 
@@ -174,21 +175,20 @@ module Amber
     def content_files
       @content_files ||= begin
         if @simple_page
-          if @locale
-            {@locale => [@file_path, ".#{@locale}", @suffix].join}
-          else
-            {I18n.default_locale => [@file_path, @suffix].join}
-          end
-        elsif File.directory?(@file_path)
-          hsh = {}
-          Dir.foreach(@file_path) do |file|
-            if file && file =~ LOCALE_FILE_MATCH_RE
-              locale = $2
-              hsh[locale.to_sym] = File.join(@file_path, file)
-            end
-          end
-          hsh
+          directory = File.dirname(@file_path)
+          regexp = SIMPLE_FILE_MATCH_RE.call(@name)
+        else
+          directory = @file_path
+          regexp = LOCALE_FILE_MATCH_RE
         end
+        hsh = {}
+        Dir.foreach(directory) do |file|
+          if file && match = regexp.match(file)
+            locale = match['locale'] || I18n.default_locale
+            hsh[locale.to_sym] = File.join(directory, file)
+          end
+        end
+        hsh
       end
     end
 
