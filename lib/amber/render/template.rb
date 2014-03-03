@@ -13,7 +13,8 @@ module Amber
         :text => 'render_textile',
         :textile => 'render_textile',
         :md => 'render_markdown',
-        :markdown => 'render_markdown'
+        :markdown => 'render_markdown',
+        :html => 'render_raw'
       }
 
       TEXTILE_TOC_RE = /^\s*h([1-6])\.\s+(.*)/
@@ -66,7 +67,7 @@ module Amber
         if @type == :haml
           return render_haml(@file, view)
         else
-          @content ||= File.read(@file).sub(PROPERTY_HEADER, '')  # remove property header
+          @content ||= File.read(@file, :encoding => 'UTF-8').sub(PROPERTY_HEADER, '')  # remove property header
           if method = RENDER_MAP[@type]
             content, erb_tags = replace_erb_tags(@content)
             html = self.send(method, view, content)
@@ -118,7 +119,7 @@ module Amber
       end
 
       def render_haml(file_path, view)
-        template = Tilt::HamlTemplate.new(file_path, {:format => :html5})
+        template = Tilt::HamlTemplate.new(file_path, {:format => :html5, :default_encoding => 'UTF-8'})
         add_bracket_links(view, template.render(view))
       end
 
@@ -130,6 +131,10 @@ module Amber
       def render_markdown(view, content)
         content = add_bracket_links(view, content)
         RDiscount.new(content, :smart, :autolink).to_html
+      end
+
+      def render_raw(view, content)
+        add_bracket_links(view, content)
       end
 
       def add_bracket_links(view, content)

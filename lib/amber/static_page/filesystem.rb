@@ -233,10 +233,10 @@ module Amber
       props = PageProperties.new(self)
       content_files.each do |locale, content_file|
         if File.extname(content_file) == '.haml'
-          props.eval(File.read(content_file), locale)
+          props.eval(File.read(content_file, :encoding => 'UTF-8'), locale)
         else
           headers = []
-          File.open(content_file) do |f|
+          File.open(content_file, :encoding => 'UTF-8') do |f|
             while (line = f.gets) =~ /^(- |)@\w/
               if line !~ /^-/
                 line = '- ' + line
