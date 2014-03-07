@@ -79,7 +79,7 @@ module Amber
       end
 
       def menu_item_path(item)
-        "/#{I18n.locale}/#{item.path.join('/')}"
+        "/" + ([I18n.locale]+item.path).join('/')
       end
 
       def menu_item_title(item)
