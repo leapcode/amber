@@ -16,7 +16,7 @@ module Amber
       #
       def available_languages
         @site.locales.collect { |locale|
-          [Amber::POSSIBLE_LANGUAGES[locale][0], locale, "/#{locale}/#{current_page_path.join('/')}"]
+          [Amber::POSSIBLE_LANGUAGES[locale][0], locale, "/"+([locale]+current_page_path).join('/')]
         }
       end
 
