@@ -7,10 +7,12 @@ module Amber
 
     attr_accessor :page_list
     attr_accessor :root
+    attr_accessor :continue_on_error
 
     def_delegators :@config, :dest_dir, :locales, :default_locale
 
     def initialize(root_dir)
+      @continue_on_error = true
       @config = SiteConfiguration.load(self, root_dir)
     end
 

@@ -63,7 +63,11 @@ module Amber
           end
         end
       rescue StandardError => exc
-        report_error(exc, options)
+        if @site.continue_on_error
+          report_error(exc, options)
+        else
+          raise exc
+        end
       ensure
         @locals, @page = pop_context
         I18n.locale = @locals[:locale]

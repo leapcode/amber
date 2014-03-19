@@ -30,7 +30,7 @@ module Amber
     attr_accessor :timestamp
 
     extend Forwardable
-    def_delegators :@site, :pages, :find_page, :find_pages, :find_page_by_path, :find_page_by_name
+    def_delegators :@site, :pages, :find_page, :find_pages, :find_page_by_path, :find_page_by_name, :continue_on_error
 
     ##
     ## CLASS METHODS
