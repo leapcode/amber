@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Amber
   class CLI
 
@@ -8,7 +10,15 @@ module Amber
     end
 
     def init(options)
-      puts 'not yet implemented'
+      new_dir = options[:arg]
+      mkdir(new_dir, nil)
+      mkdir('amber', new_dir)
+      touch('amber/config.rb', new_dir)
+      touch('amber/menu.txt', new_dir)
+      mkdir('amber/layouts', new_dir)
+      mkdir('amber/locales', new_dir)
+      mkdir('public', new_dir)
+      mkdir('pages', new_dir)
     end
 
     def build(options)
@@ -47,13 +57,41 @@ module Amber
       end
     ensure
       # cleanup if something goes wrong.
-      FileUtils.rm_r(temp_render) if File.exists?(temp_render)
-      FileUtils.rm_r(temp_old_pages) if File.exists?(temp_old_pages)
+      FileUtils.rm_r(temp_render) if temp_render && File.exists?(temp_render)
+      FileUtils.rm_r(temp_old_pages) if temp_old_pages && File.exists?(temp_old_pages)
     end
 
     def server(options)
       site = Site.new(@root)
       Amber::Server.start(:port => (options[:port] || 8000), :site => site)
+    end
+
+    private
+
+    def mkdir(dir, context)
+      if context
+        path = File.join(context, dir)
+        print_path = File.join(File.basename(context), dir)
+      else
+        path = dir
+        print_path = dir
+      end
+      unless Dir.exists?(path)
+        if File.exists?(path)
+          puts "Could not make directory `#{print_path}`. File already exists."
+          exit(1)
+        end
+        FileUtils.mkdir_p(path)
+        puts "* Creating `#{print_path}`"
+      end
+    end
+
+    def touch(file, context)
+      path = File.join(context, file)
+      unless File.exists?(path)
+        FileUtils.touch(path)
+        puts "* Creating `#{File.basename(context)}/#{file}`"
+      end
     end
 
   end
