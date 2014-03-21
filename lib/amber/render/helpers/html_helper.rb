@@ -20,6 +20,7 @@ module Amber
       #  (2) link('label' => 'page-name', :class => 'x')
       #
       def link(name, options=nil)
+        options = nil if options && !options.is_a?(Hash)
         if name.is_a? Hash
           klass = name.delete(:class)
           label, name = name.to_a.first

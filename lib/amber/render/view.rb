@@ -161,7 +161,7 @@ module Amber
         elsif options[:partial]
           Template.new(file: options[:partial], partial: true)
         elsif options[:text]
-          Template.new(content: options[:text], type: options[:type])
+          Template.new(content: options[:text], type: (options[:type] || :text))
         end
       end
 

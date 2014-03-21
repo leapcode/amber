@@ -66,6 +66,7 @@ module Amber
       # if `inherited` is true, we do not consider special non-inheritable properties.
       #
       def prop(locale, var_name, inherited=false)
+        return nil unless locale
         properties = @locales[locale.to_sym]
         value = (properties.get(var_name, inherited) if properties)
         if value.nil? && locale != I18n.default_locale

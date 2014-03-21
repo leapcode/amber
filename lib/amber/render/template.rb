@@ -73,7 +73,7 @@ module Amber
             html = self.send(method, view, content)
             return render_erb(restore_erb_tags(html, erb_tags), view)
           else
-            return "sorry, i don't understand how to render #{@type}"
+            return "sorry, i don't understand how to render `#{@type}`"
           end
         end
       end

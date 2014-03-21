@@ -14,7 +14,7 @@ module Amber
     class Layout
       def self.load(layout_dir=nil)
         @layout_dirs ||= []
-        @layout_dirs << layout_dir
+        @layout_dirs << layout_dir if layout_dir
         reload
       end
 
@@ -33,7 +33,7 @@ module Amber
         @layouts[layout]
       end
 
-      def initialize(file_path=nil, &block)
+      def initialize(file_path, &block)
         if file_path =~ /\.haml$/
           @template = Tilt::HamlTemplate.new(file_path, {:format => :html5})
         else
@@ -53,7 +53,7 @@ module Amber
       DEFAULT = '<!DOCTYPE html>
 <html>
 <head>
-  <title>#{ @page.nav_title } - #{@page.site_title}</title>
+  <title>#{ @page.nav_title } - #{@site.title}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body>
