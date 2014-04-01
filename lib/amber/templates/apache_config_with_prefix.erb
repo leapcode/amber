@@ -1,0 +1,14 @@
+  AccessFileName .htaccess
+  AliasMatch ^/[a-z]{2}/<%=@site.path_prefix%>(/.+|/|)$ "/<%=@directory%>/$1"
+  Alias /<%=@site.path_prefix%> "/<%=@directory%>/"
+
+  <Directory "/<%=@directory%>/">
+    AllowOverride FileInfo Indexes Options=All,MultiViews
+    <IfModule !mod_authz_core.c>
+      Order deny,allow
+      Allow from all
+    </IfModule>
+    <IfModule mod_authz_core.c>
+      Require all granted
+    </IfModule>
+  </Directory>

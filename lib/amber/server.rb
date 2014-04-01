@@ -39,23 +39,17 @@ module Amber
     def do_GET(request, response)
       dest_dir = @server.site.dest_dir
 
-      # add local prefix for all paths that don't have a file suffix
-      if request.path !~ /\.[a-z]{2,4}$/
-        locale = get_locale(request)
-        if !locale
-          location = "http://localhost:#{@server.port}/#{I18n.default_locale}#{request.path.sub(/\/$/,'')}"
-          @logger.info "Redirect %s ==> %s" % [request.path, location]
-          response.header['Location'] = location
-          response.status = 307
-          return
-        end
+      if path_needs_to_be_prefixed?(request.path)
+        redirect_with_prefix(request, response)
+        return
       end
 
       if File.exists?(File.join(dest_dir, request.path))
         @logger.info "Serve static file %s" % File.join(dest_dir, request.path)
         super(request, response)
       else
-        path = strip_locale(request.path)
+        path = strip_locale_and_prefix(request.path)
+        locale = get_locale(request.path)
         @server.site.load_pages
         page = @server.site.find_page_by_path(path)
         if page
@@ -81,7 +75,7 @@ module Amber
           response.body = content
         else
           request = request.clone
-          request.instance_variable_set(:@path_info, "/" + strip_locale(request.path_info))
+          request.instance_variable_set(:@path_info, "/" + strip_locale_and_prefix(request.path_info))
           @logger.info "Serve static file %s" % File.join(dest_dir, request.path_info)
           super(request, response)
         end
@@ -96,18 +90,41 @@ module Amber
 
     private
 
-    def strip_locale(path)
-      path.sub(/^\/(#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})(\/|$)/, '').sub(/\/$/, '')
+    def strip_locale_and_prefix(path)
+      if @server.site.path_prefix
+        path = path.sub(%r{^/?#{Regexp.escape(@server.site.path_prefix)}}, '')
+      end
+      path.sub(%r{^/?(#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})(/|$)}, '').sub(%r{/$}, '')
     end
 
-    def get_locale(request)
-      match = /\/(#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})(\/|$)/.match(request.path)
+    def get_locale(path)
+      match = /\/(#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})(\/|$)/.match(path)
       if match.nil?
         nil
       else
         match[1]
       end
     end
+
+    def path_needs_to_be_prefixed?(path)
+      if @server.site.path_prefix
+        path !~ /\.[a-z]{2,4}$/ && (
+          path !~ %r{^/?#{Regexp.escape(@server.site.path_prefix)}} ||
+          get_locale(path).nil?
+        )
+      else
+        path !~ /\.[a-z]{2,4}$/ && get_locale(path).nil?
+      end
+    end
+
+    def redirect_with_prefix(request, response)
+      path = request.path.gsub(%r{^/|/$}, '')
+      location = ["http://localhost:#{@server.port}", @server.site.path_prefix, I18n.default_locale, path].compact.join('/')
+      @logger.info "Redirect %s ==> %s" % [request.path, location]
+      response.header['Location'] = location
+      response.status = 307
+    end
+
   end
 
 end

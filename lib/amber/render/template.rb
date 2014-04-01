@@ -14,7 +14,9 @@ module Amber
         :textile => 'render_textile',
         :md => 'render_markdown',
         :markdown => 'render_markdown',
-        :html => 'render_raw'
+        :html => 'render_raw',
+        :none => 'render_none',
+        :erb => 'render_none'
       }
 
       TEXTILE_TOC_RE = /^\s*h([1-6])\.\s+(.*)/
@@ -135,6 +137,10 @@ module Amber
 
       def render_raw(view, content)
         add_bracket_links(view, content)
+      end
+
+      def render_none(view, content)
+        content
       end
 
       def add_bracket_links(view, content)

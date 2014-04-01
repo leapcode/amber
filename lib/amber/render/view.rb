@@ -132,7 +132,7 @@ module Amber
           if options[:page].is_a?(String)
             options[:page] = @site.find_page(options[:page])
           end
-          options[:href_base] ||= page_path(options[:page], locale)
+          options[:href_base] ||= amber_path(options[:page], locale)
         elsif options[:partial]
           options[:partial] = find_file(partialize(options[:partial]), @site, @page, locale)
         elsif options[:file]

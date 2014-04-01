@@ -1,0 +1,176 @@
+##
+## AUTO NEGOTIATED LOCALE
+##
+
+LanguagePriority en
+ForceLanguagePriority Prefer Fallback
+DirectoryIndex index
+DirectorySlash Off
+Options +MultiViews
+
+##
+## REWRITES
+##
+
+Options +FollowSymLinks
+RewriteEngine On
+
+<% if @site.path_prefix %>
+<% @path_prefix = Regexp.escape(@site.path_prefix) %>
+RewriteBase /<%= @path_prefix %>/
+
+##
+## remove trailing slashes (except for paths where we added the slash)
+##
+
+# /path_prefix/foo/bar/ => /path_prefix/foo/bar
+# /en/path_prefix/foo/bar => /en/path_prefix/foo/bar
+# rewrite sees this as:
+# /path_prefix/foo/bar.en.html/ => /path_prefix/foo/bar
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} ^/([a-z]{2}/)?(<%= @path_prefix %>/)?.+\.html/$
+RewriteRule ^(.+)\.[a-z]{2}\.html/$ /%1%2$1 [R=307,L]
+
+# en/path_prefix/blah/ => /en/path_prefix/blah
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/
+RewriteCond %{REQUEST_URI} !\.html$
+RewriteRule ^(.+)/$ /%1/<%= @path_prefix %>/$1 [R=307,L]
+
+# en/path_prefix/ => en/path_prefix
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/<%= @site.path_prefix %>/$
+RewriteRule ^$ /%1/<%= @path_prefix %> [R=307,L]
+
+# path_prefix/ => path_prefix
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} /$
+RewriteRule ^$ /<%= @path_prefix %> [R=307,L]
+
+# path_prefix/blah/ => path_prefix/blah
+RewriteCond %{QUERY_STRING} !end
+RewriteRule ^(.+)/$ $1 [R=307,L]
+
+##
+## rewrite all paths with a local prefix to use
+## the appropriate index.{local}.html file
+##
+
+## /en/prefix_path => /index.en.html
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/<%= @path_prefix %>$
+RewriteRule ^(.*) index.%1.html?end [L]
+
+# /en/path_prefix/blah => /path_prefix/blah/index.en.html
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} !/$
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/
+RewriteCond %{REQUEST_FILENAME}/index.%1.html -f
+RewriteRule ^(.*) $1/index.%1.html?end [L]
+
+# /de/path_prefix/foo/bar => /path_prefix/foo/bar.de.html
+# rewrite sees this as:
+# /de/path_prefix/foo/bar.en.html => /path_prefix/foo/bar.de.html
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} !/$
+RewriteCond %{REQUEST_FILENAME} en\.html$
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/
+RewriteRule ^(.*)?\.en\.html $1.%1.html?end [L]
+
+##
+## internally simulate a trailing slashes for directories in order
+## to trigger DirectoryIndex and autonegotiated locale.
+##
+
+# /path_prefix/foo/bar => /path_prefix/foo/bar/
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^(.*[^/])$ $1/?end [PT]
+
+# /path_prefix => /path_prefix/
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^$ /<%= @path_prefix %>/?end [PT]
+
+##
+## redirect assets that are locale prefixed
+## (in order to allow relative paths)
+##
+
+# e.g. /de/foo/assets/style.css => /foo/assets/style.css
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/<%= @path_prefix %>/
+RewriteRule (.*) /$1 [R=307,L]
+
+<% else %>
+RewriteBase /
+
+##
+## remove trailing slashes (except for paths where we added the slash)
+##
+
+# /en/ => /en
+RewriteCond %{QUERY_STRING} !end
+RewriteRule ^([a-z]{2})/$ /$1 [R=307,L]
+
+# /en/aaa/ => /en/aaa
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})/
+RewriteCond %{REQUEST_URI} !\.html$
+RewriteRule ^(.+)/$ /$1 [R=307,L]
+
+# /foo/bar.en.html/ => /foo/bar
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{REQUEST_URI} \.html/$
+RewriteRule ^(.+)\.[a-z]{2}\.html/$ $1 [R=307,L]
+
+# /foo/bar/ => /foo/blah
+RewriteCond %{QUERY_STRING} !end
+RewriteRule ^(.+)/$ $1 [R=307,L]
+
+##
+## rewrite all paths with a local prefix to use
+## the appropriate index.{local}.html file or
+## filename.{local}.html file.
+##
+
+# /en => /index.en.html
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{DOCUMENT_ROOT}/index.$1.html -f
+RewriteCond %{REQUEST_URI} ^/([a-z]{2})$
+RewriteRule ^(.*) /index.%1.html?end [L]
+
+# /en/aaa => /aaa/index.en.html
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{DOCUMENT_ROOT}/$2/index.$1.html -f
+RewriteRule ^([a-z]{2})/(.*) /$2/index.$1.html?end [L]
+
+# /de/foo/bar => /foo/bar.de.html
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{DOCUMENT_ROOT}/$2.$1.html -f
+RewriteRule ^([a-z]{2})/(.*) /$2.$1.html?end [L]
+
+##
+## internally simulate a trailing slashes for directories in order
+## to trigger DirectoryIndex and autonegotiated locale.
+##
+
+# /foo/bar => /foo/bar/
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{DOCUMENT_ROOT}/$1 -d
+RewriteRule ^(.*[^/])$ /$1/?end [PT]
+
+##
+## redirect assets that are locale prefixed
+## (in order to allow relative paths)
+##
+
+# e.g. /de/foo/assets/style.css => /foo/assets/style.css
+RewriteCond %{QUERY_STRING} !end
+RewriteCond %{DOCUMENT_ROOT}/$2 -f
+RewriteRule ^([a-z]{2})/(.*) /$2 [R=307,L]
+
+<% end %>
+

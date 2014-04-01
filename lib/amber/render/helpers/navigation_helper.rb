@@ -30,12 +30,12 @@ module Amber
           first = 'first'
           if options[:include_home]
             active = current_page_path.empty? ? 'active' : ''
-            yield({:class => [first, active].compact.join(' '), :href => menu_item_path(@site.menu), :label => menu_item_title(@site.menu)})
+            yield({:class => [first, active].compact.join(' '), :href => amber_path(@site.menu.path), :label => menu_item_title(@site.menu)})
             first = nil
           end
           @site.menu.each do |item|
             active = current_page_path.first == item.name ? 'active' : ''
-            yield({:class => [first, active].compact.join(' '), :href => menu_item_path(item), :label => menu_item_title(item)})
+            yield({:class => [first, active].compact.join(' '), :href => amber_path(item.path), :label => menu_item_title(item)})
             first = nil
           end
         end
@@ -53,7 +53,7 @@ module Amber
             title = menu_item_title(item)
             if title
               yield({
-                :href => menu_item_path(item),
+                :href => amber_path(item.path),
                 :level => level,
                 :active => path_active_class(current_page_path, item),
                 :label => title
@@ -76,10 +76,6 @@ module Amber
             []
           end
         end
-      end
-
-      def menu_item_path(item)
-        "/" + ([I18n.locale]+item.path).join('/')
       end
 
       def menu_item_title(item)
@@ -126,7 +122,7 @@ module Amber
             child_page = child.is_a?(Amber::Menu) ? page.child(child.name) : child
             next unless child_page
             haml "h#{heading}" do
-              haml :a, child_page.nav_title(locale), :href => page_path(child_page)
+              haml :a, child_page.nav_title(locale), :href => amber_path(child_page)
             end
             if summary = child_page.prop(locale, 'summary')
               haml :p, summary

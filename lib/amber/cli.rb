@@ -66,6 +66,17 @@ module Amber
       Amber::Server.start(:port => (options[:port] || 8000), :site => site)
     end
 
+    def apache(options)
+      site = Site.new(@root)
+      directory = options[:arg]
+      unless directory
+        puts "Missing DIRECTORY argument"
+        exit 1
+      end
+      directory = directory.gsub(%r{^/|/$}, '')
+      Amber::Render::Apache.echo_config(site, directory)
+    end
+
     private
 
     def mkdir(dir, context)

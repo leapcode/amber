@@ -15,6 +15,7 @@ module Amber
     attr_accessor :mount_points
     attr_accessor :locales
     attr_accessor :default_locale
+    attr_accessor :path_prefix
 
     attr_accessor :menu
 
@@ -92,6 +93,9 @@ module Amber
           nil
         end
       }.compact
+      if @path_prefix
+        @path_prefix.gsub!(%r{^/|/$}, '')
+      end
     end
 
     def pages_changed?

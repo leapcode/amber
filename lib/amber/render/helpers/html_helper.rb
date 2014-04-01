@@ -44,7 +44,7 @@ module Amber
           page = @site.find_page(name_without_anchor)
           if page
             label ||= page.nav_title
-            path = page_path(page) + anchor
+            path = amber_path(page) + anchor
           else
             puts "warning: dead link to `#{name_without_anchor}` from page `/#{I18n.locale}/#{@page.path.join('/')}`"
             label ||= name_without_anchor
@@ -60,14 +60,27 @@ module Amber
       end
 
       #
-      # returns the shortest possible path. this would be nice to support some day, but more difficult with statically rendered sites.
+      # returns the ideal full url path for a page or path (expressed as an array).
       #
-      def page_path(page, locale=I18n.locale)
-        if page.prop(locale, :alias)
-          "/#{locale}/#{page.prop(locale, :alias).first}/#{page.name}"
+      def amber_path(page_or_array, locale=I18n.locale)
+        if page_or_array.is_a? Array
+          page = nil
+          path = page_or_array
+        elsif page_or_array.is_a? StaticPage
+          page = page_or_array
+          path = page.path
         else
-          "/#{locale}/#{page.path.join('/')}"
+          return ''
         end
+        full_path = []
+        full_path << @site.path_prefix if @site.path_prefix
+        full_path << locale # always do this?
+        if page && page.prop(locale, :alias)
+          full_path << page.prop(locale, :alias).first
+        else
+          full_path += path
+        end
+        "/" + full_path.join('/')
       end
 
     end

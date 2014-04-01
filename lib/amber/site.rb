@@ -9,7 +9,7 @@ module Amber
     attr_accessor :root
     attr_accessor :continue_on_error
 
-    def_delegators :@config, :dest_dir, :locales, :default_locale
+    def_delegators :@config, :dest_dir, :locales, :default_locale, :path_prefix
 
     def initialize(root_dir)
       @continue_on_error = true
@@ -46,6 +46,7 @@ module Amber
         Render::Asset.render_dir(src, dst)
         putc '.'; $stdout.flush
       end
+      Render::Apache.write_htaccess(@config, @config.dest_dir)
       puts
     end
 
