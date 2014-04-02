@@ -1,6 +1,8 @@
+require File.join([File.dirname(__FILE__),'lib','amber','version.rb'])
+
 Gem::Specification.new do |s|
   s.name        = "amber"
-  s.version     = "0.2.7"
+  s.version     = Amber::VERSION
   s.summary     = "Static website generator"
   s.description = "Amber is a super simple and super flexible static website generator with support for nice localization and navigation."
   s.authors     = ["Elijah Sparrow"]

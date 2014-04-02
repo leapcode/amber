@@ -52,6 +52,7 @@ module Amber
 
 end
 
+require 'amber/version'
 require 'amber/cli'
 require 'amber/server'
 require 'amber/logger'
