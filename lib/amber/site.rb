@@ -46,6 +46,9 @@ module Amber
         Render::Asset.render_dir(src, dst)
         putc '.'; $stdout.flush
       end
+      if @config.short_paths
+        render_short_path_symlinks
+      end
       Render::Apache.write_htaccess(@config, @config.dest_dir)
       puts
     end
@@ -96,6 +99,22 @@ module Amber
 
     def find_page_by_name(name)
       @pages_by_name[name]
+    end
+
+    #
+    # returns the shortest possible path for a page, such that the path doesn't collide with
+    # another page or another page's aliases.
+    #
+    def shortest_path(page)
+      path_so_far = []
+      page.path.reverse.each do |path_segment|
+        path_so_far.push(path_segment)
+        path_str = path_so_far.join('/')
+        if @pages_by_path[path_str].nil? && short_paths[path_str] == page
+          return path_so_far
+        end
+      end
+      return []
     end
 
     private
@@ -149,6 +168,55 @@ module Amber
         end
       end
       return @root
+    end
+
+    #
+    # adds symlinks for all possible 'short paths' for every page.
+    # this works by:
+    # (1) examine all pages in order of longest path depth and assign 'short paths' for each page.
+    # (2) examine all short paths in order of shortest path depth and create symlinks
+    #
+    def render_short_path_symlinks
+      short_paths.each do |path, page|
+        page.link_page_aliases(@config.dest_dir, [path])
+      end
+    end
+
+    #
+    # returns a hash containing all the automatically determined shortest paths for every page.
+    # the data structure looks like so:
+    #
+    # {
+    #   "ddd" => <page 'bbb/ddd'>,
+    #   "ccc" => <page 'bbb/ccc'>,
+    #   "red" => <page 'autoalias/red'>,
+    #   "blue"=> <page 'autoalias/blue'>,
+    #   "red/blue" => <page 'autoalias/red/blue'>
+    # }
+    #
+    # short_paths does not include the normal paths or normal aliases, just the automatic short path aliases.
+    #
+    def short_paths
+      @short_paths ||= begin
+        shortpaths = {}
+        pages_in_depth_order = @page_list.collect{ |page|
+          {:page => page, :path => page.path.dup, :depth => page.path.length} if page.path.length > 1
+        }.compact.sort {|a,b| a[:depth] <=> b[:depth]}
+        pages_in_depth_order.each do |record|
+          record[:depth].times do |depth|
+            record[:path].shift
+            path = record[:path].join('/')
+            if @pages_by_path[path].nil? && shortpaths[path].nil?
+              shortpaths[path] = record[:page]
+            end
+          end
+        end
+        # debug:
+        #shortpaths.each do |path, record|
+        #  puts "#{record[:page].path.join('/')} => #{record[:path].join('/')}"
+        #end
+        shortpaths
+      end
     end
 
   end

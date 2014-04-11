@@ -16,6 +16,7 @@ module Amber
     attr_accessor :locales
     attr_accessor :default_locale
     attr_accessor :path_prefix
+    attr_accessor :short_paths
 
     attr_accessor :menu
 

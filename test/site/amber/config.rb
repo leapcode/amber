@@ -4,3 +4,4 @@ if $path_prefix
 end
 @default_locale = :en
 @locales = [:en, :de]
+@short_paths = true

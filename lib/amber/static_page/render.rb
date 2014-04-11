@@ -39,6 +39,18 @@ module Amber
       end
     end
 
+    #
+    # creates symlinks for aliases to this page.
+    # called by Page#render_to_file and Site#render_short_path_aliases
+    #
+    def link_page_aliases(dest_dir, alias_paths=self.aliases)
+      alias_paths.each do |alias_path|
+        alias_file_path = Pathname.new(File.join(dest_dir, alias_path))
+        page_file_path  = Pathname.new(File.join(dest_dir, *@path))
+        symlink(page_file_path, alias_file_path)
+      end
+    end
+
     private
 
     # RAILS
@@ -69,33 +81,31 @@ module Amber
       end
     end
 
-    # called only by render_to_file
-    # for now, we only support aliases on pages that are directories, for simplicity sake.
-    def link_page_aliases(dest_dir)
-      if @simple_page
-        Amber.logger.warn { "The page `#{@file_path}` sets a path alias, but currently aliases are only supported for directory-based pages. Skipping." }
+    #
+    # create a symlink. arguments must be of type Pathname.
+    #
+    def symlink(from_path, to_path)
+      to_path = realpath(to_path)
+      target = from_path.relative_path_from(to_path).to_s.sub(/^\.\.\//, '')
+      if !to_path.dirname.directory?
+        Amber.logger.warn { "On page `#{@file_path}`, the parent directories for alias name `#{to_path}` don't exist. Skipping alias." }
+        return
+      end
+      if to_path.exist? && to_path.symlink?
+        File.unlink(to_path)
+      end
+      if !to_path.exist?
+        Amber.logger.debug { "Symlink #{to_path} => #{target}" }
+        FileUtils.ln_s(target, to_path)
+      end
+    end
+
+    def realpath(pathname)
+      dir = pathname.dirname
+      if dir.directory? || dir.symlink?
+        dir.realpath + pathname.basename
       else
-        aliases.each do |alias_path|
-          alias_path = Pathname.new(File.join(dest_dir, alias_path))
-          if !File.directory?(File.dirname(alias_path))
-            Amber.logger.warn { "On page `#{@file_path}`, the parent directories for alias name `#{alias_path}` don't exist. Skipping alias." }
-          else
-            page_path = Pathname.new(File.join(dest_dir, *@path))
-            target = page_path.relative_path_from(alias_path).to_s.sub(/^\.\.\//, '')
-            if File.exists?(alias_path)
-              if File.symlink?(alias_path)
-                File.unlink(alias_path)
-                Amber.logger.debug { "Alias #{alias_path} => #{target}" }
-                FileUtils.ln_s(target, alias_path)
-              else
-                Amber.logger.warn { "The page `#{@file_path}` sets a path alias, but there is already a file in the way (`#{alias_path}`)" }
-              end
-            else
-              Amber.logger.debug { "Alias #{alias_path} => #{target}" }
-              FileUtils.ln_s(target, alias_path)
-            end
-          end
-        end
+        pathname
       end
     end
 

@@ -95,11 +95,7 @@ module Amber
     # e.g. /home/user/mysite/public/about-us/contact/index.en.html
     #
     def destination_file(dest_dir, locale)
-      if @simple_page
-        File.join(dest_dir, "#{File.join(@path)}.#{locale}.html")
-      else
-        File.join(dest_dir, *@path, "index.#{locale}.html")
-      end
+      File.join(dest_dir, *@path, "index.#{locale}.html")
     end
 
     private
