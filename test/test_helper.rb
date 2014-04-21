@@ -1,11 +1,11 @@
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
 
+TESTING=true
+
 require 'rubygems'
 gem 'minitest'
 require 'minitest/autorun'
 require 'amber'
-
-TESTING=true
 
 class Minitest::Test
 

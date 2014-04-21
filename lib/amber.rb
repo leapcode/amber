@@ -50,6 +50,14 @@ module Amber
     end
   end
 
+  def self.env
+    if defined?(TESTING) && TESTING==true
+      :test
+    else
+      :production
+    end
+  end
+
 end
 
 require 'amber/version'

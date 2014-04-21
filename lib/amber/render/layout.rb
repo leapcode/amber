@@ -35,7 +35,8 @@ module Amber
 
       def initialize(file_path, &block)
         if file_path =~ /\.haml$/
-          @template = Tilt::HamlTemplate.new(file_path, {:format => :html5})
+          ugly = Amber.env != :test
+          @template = Tilt::HamlTemplate.new(file_path, {:format => :html5, :ugly => ugly})
         else
           @template = Tilt.new(file_path, &block)
         end
