@@ -112,3 +112,16 @@ Available properties:
 * `@this.alias` -- Alternate paths for the page to be rendered on. May be an array. The first path will be used when linking.
 
 To make a property none-inheritable, specify it like so: `@this.layout = 'home'`. For some properties, like `alias`, it does not make sense for the property to be inheritable.
+
+Troubleshooting
+-----------------------------------
+
+If you get an error at some point like this:
+
+    WARNING: Nokogiri was built against LibXML version 2.8.0, but has dynamically loaded 2.9.1
+
+It just means that libxml has been upgraded since the gem nokogiri was installed. To fix, run this:
+
+    sudo gem pristine nokogiri
+
+
