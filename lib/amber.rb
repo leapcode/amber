@@ -5,8 +5,11 @@ require 'i18n'
 require 'i18n/backend/fallbacks'
 I18n::Backend::Simple.send(:include, I18n::Backend::Fallbacks)
 
-require 'sass'  # sass seems to freak out if require'd after haml.
-require 'haml'  #
+# ensure that we load sass from a gem, not the sass included in some
+# versions of haml.
+gem 'sass'
+require 'sass'
+require 'haml'
 
 module Amber
 
