@@ -37,7 +37,7 @@ module Amber
   POSSIBLE_LANGUAGE_CODES = POSSIBLE_LANGUAGES.keys.map(&:to_s)
 
   # Possible page suffixes. Only files with these suffixes are treated as pages
-  PAGE_SUFFIXES = %w(haml md markdown text textile rst html)
+  PAGE_SUFFIXES = %w(haml md markdown text textile rst html html.haml)
 
   def self.logger
     @logger ||= begin

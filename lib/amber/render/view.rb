@@ -79,7 +79,12 @@ module Amber
 
       private
 
+      #
+      # search possible paths for the file to be rendered.
+      # called only from parse_render_options()
+      #
       def find_file(path, site, page, locale)
+        return path if File.exists?(path)
         search = [
           path,
           "#{site.pages_dir}/#{path}",
@@ -87,13 +92,20 @@ module Amber
           "#{File.dirname(page.file_path)}/#{path}",
           "#{site.config_dir}/#{path}"
         ]
+        # attempt to find a file with preferred locale
         search.each do |path|
           return path if File.exists?(path)
-          Dir["#{path}.#{locale}.*"].each do |path_with_locale|
+          Dir["#{path}.#{locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
             return path_with_locale if File.exists?(path_with_locale)
           end
-          Dir["#{path}.*"].each do |path_with_suffix|
+          Dir["#{path}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_suffix|
             return path_with_suffix if File.exists?(path_with_suffix)
+          end
+        end
+        # attempt to find a file with default locale
+        search.each do |path|
+          Dir["#{path}.#{I18n.default_locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
+            return path_with_locale if File.exists?(path_with_locale)
           end
         end
         raise MissingTemplate.new(path)

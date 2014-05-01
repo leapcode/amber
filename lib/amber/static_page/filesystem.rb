@@ -98,8 +98,6 @@ module Amber
       File.join(dest_dir, *@path, "index.#{locale}.html")
     end
 
-    private
-
     # e.g. en, de, pt
     LOCALES_RE  = /(?<locale>#{Amber::POSSIBLE_LANGUAGE_CODES.join('|')})/
     LOCALES_GLOB = "{#{Amber::POSSIBLE_LANGUAGE_CODES.join(',')}}"
@@ -113,6 +111,8 @@ module Amber
     LOCALE_FILE_MATCH_GLOB = "{index.,}#{LOCALES_GLOB}.#{PAGE_SUFFIXES_GLOB}"
 
     SIMPLE_FILE_MATCH_RE = lambda {|name| /^(#{Regexp.escape(name)})(\.#{LOCALES_RE})?\.#{PAGE_SUFFIXES_RE}$/ }
+
+    private
 
     #
     # returns true if the name of a file could be a 'simple' static page
