@@ -76,13 +76,41 @@ Depending the the file extension, the file with be parsed like so:
     .haml       -- HAML
     .md         -- Markdown
     .markdown   -- Markdown
-    .txt        -- Textile
+    .text       -- Textile
     .textile    -- Textile
-    .rst        -- ReStructuredText
+    .html       -- HTML
 
-Markdown is rendered using RDiscount, Textile is rendered using RedCloth, and RST is rendered using docutils. Markdown is recommended, because it supports table of contents, although the markup is limited.
+You can use the native linking method for each markup, or you can use the Amber link method:
 
-There are a couple options to preview your source files without needing to run the web server:
+    [[label -> page-name]]
+    or
+    [[label => page-name]]
+    or
+    [[label -> absolute-url]]
+    or
+    [[page-name]]
+
+In these examples, `page-name` can be the name of the page, optionally
+qualified by some context. For example, if you had two pages called
+`security`, you could link to `[[chat/security]]` or `[[email/security]]`.
+
+This double bracket link notation will automatically find the right
+path for the page with the specified name. Also, Amber will warn you if the page
+name is missing and it will ensure that the link is created with the correct
+language prefix. In haml, you can get the same effect using
+`link 'label' => 'page-name'`
+
+If writing in a right to left script, the links look like:
+
+    [[page-name <= label]]
+
+But only if your text editor correctly displays right to left script.
+
+Previewing pages
+-------------------------------------
+
+To preview your site, run `amber server`. Alternately, there are a couple
+options to preview your source files without needing to run the web server:
 
 * Markdown preview for Chrome: https://chrome.google.com/webstore/detail/markdown-preview/jmchmkecamhbiokiopfpnfgbidieafmd
 * Markdown preview for Sublime: https://github.com/revolunet/sublimetext-markdown-preview
