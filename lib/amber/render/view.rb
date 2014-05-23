@@ -36,11 +36,12 @@ module Amber
       # more or less the same as Rails render()
       #
       # supported options:
-      #   :page    -- page path or page object to render
-      #   :file    -- renders the file specified, using suffix to determine type.
-      #   :partial -- same as :file, but disables layout
-      #   :text    -- string to render
-      #   :type    -- required for :text
+      #   :page      -- page path or page object to render
+      #   :file      -- generic file to render, disables layout or toc.
+      #                 type determined by suffix or :type
+      #   :partial   -- same as :file, but searches for files with leading _
+      #   :text      -- string to render
+      #   :type      -- the format of the input, required for :text
       #
       def render(options={}, locals={}, toc_only=false, &block)
         push_context @locals, @page

@@ -111,8 +111,8 @@ module Amber
 
     # called only by render_to_file
     def render_content_files(dest_dir, options)
-      view = Render::View.new(self, self.mount_point)
-      @mount_point.locales.each do |file_locale|
+      view = Render::View.new(self, @config)
+      @config.locales.each do |file_locale|
         content_file = content_file(file_locale)
         next unless content_file
         dest = destination_file(dest_dir, file_locale)
@@ -122,7 +122,7 @@ module Amber
         if options[:force] || !File.exist?(dest) || File.mtime(content_file) > File.mtime(dest)
           File.open(dest, 'w') do |f|
             layout = @props.layout || 'default'
-            f.write view.render({file: content_file, layout: layout}, {locale: file_locale})
+            f.write view.render({page: self, layout: layout}, {locale: file_locale})
           end
         end
       end

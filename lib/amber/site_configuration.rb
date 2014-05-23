@@ -12,10 +12,10 @@ module Amber
 
     attr_accessor :title
     attr_accessor :pagination_size
-    attr_accessor :mount_points
     attr_accessor :locales
     attr_accessor :default_locale
     attr_accessor :path_prefix
+    alias :path :path_prefix
     attr_accessor :short_paths
 
     attr_accessor :menu
@@ -30,6 +30,10 @@ module Amber
     attr_accessor :menu_file
     attr_accessor :locales_dir
     attr_accessor :timestamp
+
+    # an array of SiteConfigurations that are attached as sub-sites
+    # to this one.
+    attr_accessor :children
 
     extend Forwardable
     def_delegators :@site, :pages, :find_page, :find_pages, :find_page_by_path, :find_page_by_name, :continue_on_error
@@ -50,6 +54,7 @@ module Amber
     # accepts a file_path to a configuration file.
     #
     def initialize(site, root_dir, options={})
+      @children = []
       @site = site
       @root_dir = File.expand_path(find_in_directory_tree('amber', 'config.rb', root_dir))
       if @root_dir == '/'
@@ -63,9 +68,6 @@ module Amber
       @menu_file   = config_path('menu.txt')
       @locales_dir = config_path('locales')
       @layouts_dir = config_path('layouts')
-      @path = '/'
-      @mount_points = []
-      @mount_points << self
       @title = "untitled"
       @pagination_size = 20
 
@@ -73,15 +75,21 @@ module Amber
       @menu.load(@menu_file) if @menu_file
 
       self.eval
+      @path_prefix = options[:path_prefix] if options[:path_prefix]
       self.cleanup
 
       reset_timestamp
       Render::Layout.load(@layouts_dir)
     end
 
-    #def include_site(directory_source, options={})
-    #  @mount_points << SiteMountPoint.new(self, directory_source, options)
-    #end
+    #
+    # map('/path' => '../othersite')
+    #
+    def map(path_to_directory_source, options={})
+      path, root_dir = path_to_directory_source.to_a.first
+      config = self.load(@site, root_dir, {:path_prefix => path})
+      @site.add_config(config)
+    end
 
     def cleanup
       @locale ||= I18n.default_locale
@@ -96,12 +104,13 @@ module Amber
       }.compact
       if @path_prefix
         @path_prefix.gsub!(%r{^/|/$}, '')
+        @path_prefix = nil if @path_prefix == ''
       end
     end
 
-    def pages_changed?
-      @mount_points.detect {|mp| mp.changed?}
-    end
+    #def pages_changed?
+    #  self.changed? || @children.detect {|child| child.changed?}
+    #end
 
     def eval
       self.instance_eval(File.read(@config_file), @config_file)

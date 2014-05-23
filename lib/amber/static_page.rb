@@ -13,8 +13,8 @@ module Amber
       :name,                # the name of the page
       :file_path,           #
       :parent,              # parent page (nil for root page)
-      :mount_point,         # associated SiteConfiguration
-      :site,                # associated Site
+      :config,              # associated SiteConfiguration (site might have several)
+      :site,                # associated Site (only one)
       :locales,             # currently unused
       :valid                # `false` if there is some problem with this page.
 
@@ -28,7 +28,7 @@ module Amber
 
     FORBIDDEN_PAGE_CHARS_RE = /[A-Z\.\?\|\[\]\{\}\$\^\*~!@#%&='"<>]/
 
-    def initialize(parent, name, file_path=nil)
+    def initialize(parent, name, file_path=nil, path_prefix="/")
       @valid     = true
       @children  = PageArray.new  # array of StaticPages
       @nav_title = {} # key is locale
@@ -39,11 +39,11 @@ module Amber
       # set @parent & @path
       if parent
         @parent = parent
-        @mount_point = @parent.mount_point
+        @config = @parent.config
         @parent.add_child(self)
         @path = [@parent.path, @name].flatten.compact
       else
-        @path = []
+        @path = (path_prefix||"").split('/')
       end
 
       if @name =~ FORBIDDEN_PAGE_CHARS_RE

@@ -9,6 +9,7 @@ module Amber
     attr_accessor :root
     attr_accessor :continue_on_error
 
+    # @config is the primary SiteConfiguration
     def_delegators :@config, :dest_dir, :locales, :default_locale, :path_prefix
 
     def initialize(root_dir)
@@ -16,24 +17,26 @@ module Amber
       @config = SiteConfiguration.load(self, root_dir)
     end
 
-    def load_pages
-      @root          = nil
-      @pages_by_path = {}
-      @pages_by_name = {}
-      @page_list     = PageArray.new
-      @dir_list      = []
-      @config.mount_points.each do |mp|
-        add_mount_point(mp)
-        mp.reset_timestamp
-      end
+    def add_config(config)
+      @config.children << config
     end
 
-    def reload_pages_if_needed
-      if @pages_by_path.nil? || @config.pages_changed?
-        puts "Reloading pages ................."
-        load_pages
-      end
+    def load_pages
+      @root          = nil
+      @pages_by_path = {}  # hash of pages keyed by page path
+      @pages_by_name = {}  # hash of pages keyed by page name
+      @page_list     = PageArray.new
+      @dir_list      = []  # an array of non-page directories
+      @page_paths    = []  # an array of page paths, used for greping through paths.
+      add_configuration(@config)
     end
+
+    #def reload_pages_if_needed
+    #  if @pages_by_path.nil? || @config.pages_changed?
+    #    puts "Reloading pages ................."
+    #    load_pages
+    #  end
+    #end
 
     def render
       @page_list.each do |page|
@@ -119,31 +122,38 @@ module Amber
 
     private
 
-    def add_mount_point(mp)
+    def add_configuration(config)
+      config.reset_timestamp
+
       # create base_page
       base_page = begin
-        if mp.path == '/'
-          @root = StaticPage.new(nil, 'root', mp.pages_dir)
+        if config.path.nil?
+          @root = StaticPage.new(nil, 'root', config.pages_dir)
           add_page(@root)
           @root
         else
-          name = File.basename(mp.path)
-          page = StaticPage.new(find_parent(mp.path), name, mp.pages_dir)
+          name = File.basename(config.path)
+          page = StaticPage.new(find_parent(config.path), name, config.pages_dir, config.path_prefix)
           add_page(page)
           page
         end
       end
-      base_page.mount_point = mp
+      base_page.config = config
 
       # load menu and locals
-      I18n.load_path += Dir[File.join(mp.locales_dir, '/*.{rb,yml,yaml}')] if mp.locales_dir
+      I18n.load_path += Dir[File.join(config.locales_dir, '/*.{rb,yml,yaml}')] if config.locales_dir
 
       # add the full directory tree
       base_page.scan_directory_tree do |page, asset_dir|
         add_page(page) if page
         @dir_list << asset_dir if asset_dir
       end
-      @page_paths = @pages_by_path.keys
+      @page_paths += @pages_by_path.keys
+
+      # recursively add sub-sites
+      config.children.each do |sub_config|
+        add_configuration(sub_config)
+      end
     end
 
     def add_page(page)
