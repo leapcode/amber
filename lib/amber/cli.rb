@@ -40,6 +40,7 @@ module Amber
       site = Site.new(@root)
       site.continue_on_error = false
       site.load_pages
+      FileUtils.mkdir_p(site.dest_dir) unless File.exists?(site.dest_dir)
       gitkeep = File.exists?(File.join(site.dest_dir, '.gitkeep'))
       temp_render = File.join(File.dirname(site.dest_dir), 'public-tmp')
       temp_old_pages = File.join(File.dirname(site.dest_dir), 'remove-me')
