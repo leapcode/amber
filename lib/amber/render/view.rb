@@ -154,14 +154,14 @@ module Amber
       end
 
       def should_render_toc?(locale, options, page)
-        if options[:partial].nil?
+        if options[:partial] || options[:file]
+          false
+        else
           if page.prop(locale, :toc).nil?
             true
           else
             page.prop(locale, :toc)
           end
-        else
-          false
         end
       end
 
@@ -169,7 +169,7 @@ module Amber
         if options[:page]
           Template.new(file: options[:page].content_file(locale))
         elsif options[:file]
-          Template.new(file: options[:file])
+          Template.new(file: options[:file], type: options[:type])
         elsif options[:partial]
           Template.new(file: options[:partial], partial: true)
         elsif options[:text]

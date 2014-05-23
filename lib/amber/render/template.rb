@@ -15,6 +15,7 @@ module Amber
         :md => 'render_markdown',
         :markdown => 'render_markdown',
         :html => 'render_raw',
+        :raw  => 'render_raw',
         :none => 'render_none',
         :erb => 'render_none'
       }
@@ -32,7 +33,7 @@ module Amber
       def initialize(options={})
         if options[:file]
           @file = options[:file]
-          @type = type_from_file(@file)
+          @type = options[:type] || type_from_file(@file)
         elsif options[:content]
           @content = options[:content]
           @type    = options[:type]      # e.g. :haml. required if @content
@@ -47,13 +48,14 @@ module Amber
         view.locals[:_type] = @type
         render_mode = options.delete(:mode) || :content
         toc = options.delete(:toc)
-
         if render_mode == :title
           render_title(view)
         else
           html = render_html(view)
           if render_mode == :toc
             RegexTableOfContents.new(html, options).to_toc
+          elsif toc === false
+            html
           elsif toc || render_mode == :toc_and_content
             toc = RegexTableOfContents.new(html, options)
             %(<div id="TOC">%s</div>\n\n%s) % [toc.to_toc, toc.to_html]
