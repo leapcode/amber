@@ -15,7 +15,6 @@ module Amber
       :parent,              # parent page (nil for root page)
       :config,              # associated SiteConfiguration (site might have several)
       :site,                # associated Site (only one)
-      :locales,             # currently unused
       :valid                # `false` if there is some problem with this page.
 
     attr_reader :props      # set of page properties (PropertySet)
@@ -114,31 +113,46 @@ module Amber
     end
 
     #
+    # Returns array of locale symbols for all locales with properties set
+    # Note: there might be a content for a locale that does not show up in this array,
+    # if the content file does not set any properties.
+    #
+    def locales
+      @props.locales
+    end
+
+    #
     # returns an array of normalized aliases based on the :alias property
     # defined for a page.
     #
     # aliases are defined with a leading slash for absolute paths, or without a slash
     # for relative paths. this method converts this to a format that amber uses
-    # (all absolute, with no leading slash).
+    # (all absolute, with no leading slash, as an array instead of a string).
     #
-    # currently, we do not maintain per-locale paths or aliases.
-    #
-    def aliases
+    def aliases(locale=I18n.default_locale)
       @aliases ||= begin
-        if @props.alias.nil?
-          []
-        else
-          @props.alias.collect {|alias_path|
-            if alias_path =~ /^\//
-              alias_path.sub(/^\//, '')
-            elsif @parent
-              (@parent.path + [alias_path]).join('/')
+        aliases_hash = Hash.new([])
+        @props.locales.each do |locale|
+          aliases = @props.prop_without_inheritance(locale, :alias)
+          aliases_hash[locale] = begin
+            if aliases.nil?
+              []
             else
-              alias_path
+              [aliases].flatten.collect {|alias_path|
+                if alias_path =~ /^\//
+                  alias_path.sub(/^\//, '').split('/')
+                elsif @parent
+                  @parent.path + [alias_path]
+                else
+                  alias_path.split('/')
+                end
+              }
             end
-          }
+          end
         end
+        aliases_hash
       end
+      @aliases[locale]
     end
 
     protected

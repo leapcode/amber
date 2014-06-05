@@ -30,6 +30,8 @@ module Amber
 
   class StaticPageServlet < WEBrick::HTTPServlet::FileHandler
 
+    ASSET_RE = /\.(jpg|jpeg|png|gif|webm|css|js|ico)$/
+
     def initialize(http_server, amber_server)
       @logger = http_server.logger
       @server = amber_server
@@ -44,14 +46,19 @@ module Amber
         return
       end
 
-      if File.exists?(File.join(dest_dir, request.path))
+      path = strip_locale_and_prefix(request.path)
+      if File.file?(File.join(dest_dir, request.path))
         @logger.info "Serve static file %s" % File.join(dest_dir, request.path)
         super(request, response)
-      else
-        path = strip_locale_and_prefix(request.path)
+      elsif File.file?(File.join(dest_dir, path))
+        request = request.clone
+        request.instance_variable_set(:@path_info, "/"+path)
+        @logger.info "Serve static file with locale prefix %s" % File.join(dest_dir, path)
+        super(request, response)
+      elsif path !~ ASSET_RE
         locale = get_locale(request.path)
         @server.site.load_pages
-        page = @server.site.find_page_by_path(path)
+        page = @server.site.find_page_by_path(path, locale)
         if page
           @logger.info "Serving Page %s" % page.path.join('/')
           response.status = 200
@@ -73,12 +80,9 @@ module Amber
             end
           end
           response.body = content
-        else
-          request = request.clone
-          request.instance_variable_set(:@path_info, "/" + strip_locale_and_prefix(request.path_info))
-          @logger.info "Serve static file %s" % File.join(dest_dir, request.path_info)
-          super(request, response)
         end
+      else
+        super(request, response)
       end
     end
     #rescue Exception => exc
@@ -91,6 +95,11 @@ module Amber
     private
 
     def strip_locale_and_prefix(path)
+      # The path comes to the server as URL escaped codes, that are then
+      # converty to ascii. But these codes might be utf-8 characters, so we force
+      # utf-8 encouding to allows non-ascii paths. I am not sure if always forcing
+      # will be a problem.
+      path = path.force_encoding('utf-8')
       if @server.site.path_prefix
         path = path.sub(%r{^/?#{Regexp.escape(@server.site.path_prefix)}}, '')
       end

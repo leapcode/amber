@@ -34,8 +34,10 @@ module Amber
     def render_to_file(dest_dir, options={})
       render_content_files(dest_dir, options)
       render_assets(dest_dir)
-      if aliases.any?
-        link_page_aliases(dest_dir)
+      @props.locales.each do |locale|
+        if aliases(locale).any?
+          link_page_aliases(dest_dir, aliases(locale), locale)
+        end
       end
     end
 
@@ -43,9 +45,13 @@ module Amber
     # creates symlinks for aliases to this page.
     # called by Page#render_to_file and Site#render_short_path_aliases
     #
-    def link_page_aliases(dest_dir, alias_paths=self.aliases)
+    def link_page_aliases(dest_dir, alias_paths, locale=I18n.default_locale)
       alias_paths.each do |alias_path|
-        alias_file_path = Pathname.new(File.join(dest_dir, alias_path))
+        alias_file_path = File.join(dest_dir, alias_path)
+        #if locale != I18n.default_locale
+        #  alias_file_path += ".#{locale}"
+        #end
+        alias_file_path = Pathname.new(alias_file_path)
         page_file_path  = Pathname.new(File.join(dest_dir, *@path))
         symlink(page_file_path, alias_file_path)
       end

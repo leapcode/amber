@@ -28,6 +28,10 @@ module Amber
       @page_list     = PageArray.new
       @dir_list      = []  # an array of non-page directories
       @page_paths    = []  # an array of page paths, used for greping through paths.
+
+      # some paths are specific to only one locale (e.g aliases)
+      @pages_by_locale_path = POSSIBLE_LANGUAGES.keys.inject(Hash.new({})) {|h,locale| h[locale] = {}; h}
+
       add_configuration(@config)
     end
 
@@ -69,6 +73,13 @@ module Amber
       @config.dest_dir = dest_dir
     end
 
+    #
+    # find pages by a filter.
+    # filter is a string composing a path segment.
+    # For example:
+    #   "chat/security"
+    # Which would match "/services/chat/security" but not "/services/security"
+    #
     def find_pages(filter)
      filter = filter.downcase
      if filter =~ /\//
@@ -96,8 +107,16 @@ module Amber
       @page_list
     end
 
-    def find_page_by_path(path)
-      @pages_by_path[path]
+    def find_page_by_path(path, locale=I18n.default_locale)
+      if locale.is_a? String
+        if I18n.locale_available?(locale)
+          locale = locale.to_sym
+        end
+      end
+      if path.is_a? Array
+        path = path.join('/')
+      end
+      @pages_by_locale_path[locale][path] || @pages_by_path[path]
     end
 
     def find_page_by_name(name)
@@ -156,17 +175,32 @@ module Amber
       end
     end
 
+    #
+    # registers a page with the site, indexing the page path in our various hashes
+    #
     def add_page(page)
       @pages_by_name[page.name] = page
       @pages_by_path[page.path.join('/')] = page
-      page.aliases.each do |alias_path|
-        if @pages_by_path[alias_path]
-          Amber.logger.warn "WARNING: page `#{page.path.join('/')}` has alias `#{alias_path}`, but this path is already taken"
-        else
-          @pages_by_path[alias_path] = page
-        end
+      add_aliases(I18n.default_locale, page, @pages_by_path)
+      page.locales.each do |locale|
+        next if locale == I18n.default_locale
+        add_aliases(locale, page, @pages_by_locale_path[locale])
       end
       @page_list << page
+    end
+
+    #
+    # registers a page's aliases with the site
+    #
+    def add_aliases(locale, page, path_hash)
+      page.aliases(locale).each do |alias_path|
+        alias_path_str = alias_path.join('/')
+        if path_hash[alias_path_str]
+          Amber.logger.warn "WARNING: page `#{page.path.join('/')}` has alias `#{alias_path_str}`, but this path is already taken by `#{path_hash[alias_path_str].path.join('/')}` (locale = #{locale})."
+        else
+          path_hash[alias_path_str] = page
+        end
+      end
     end
 
     def find_parent(path)

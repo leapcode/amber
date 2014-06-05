@@ -2,9 +2,18 @@ module Amber
   module Render
     module HtmlHelper
 
+      #
+      # return html markup suitable for setting the href base
+      # of the document. If this is added to the document's HEAD,
+      # then relative urls will work as expected even though the
+      # url path does not end with a '/'
+      #
       def html_head_base
-        href = (['..'] * @page.path.count).join('/')
-        "<base href=\"#{href}\" />"
+        if @page
+          "<base href=\"#{amber_path(@page)}/\" />"
+        else
+          ""
+        end
       end
 
       #
@@ -63,22 +72,22 @@ module Amber
       # returns the ideal full url path for a page or path (expressed as an array).
       #
       def amber_path(page_or_array, locale=I18n.locale)
+        page = nil
         if page_or_array.is_a? Array
-          page = nil
-          path = page_or_array
+          page = @site.find_page_by_path(page_or_array)
         elsif page_or_array.is_a? StaticPage
           page = page_or_array
-          path = page.path
-        else
+        end
+        if page.nil?
           return ''
         end
         full_path = []
         full_path << @site.path_prefix if @site.path_prefix
         full_path << locale # always do this?
-        if page && page.prop(locale, :alias)
-          full_path << page.prop(locale, :alias).first
+        if page.aliases(locale).any?
+          full_path += page.aliases(locale).first
         else
-          full_path += path
+          full_path += page.path
         end
         "/" + full_path.join('/')
       end

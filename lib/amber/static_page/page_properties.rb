@@ -112,6 +112,13 @@ module Amber
       end
 
       #
+      # returns an array of locale symbols that are active for this page.
+      #
+      def locales
+        @locales.keys
+      end
+
+      #
       # tries to get the value of an inherited variable
       #
       #def get_inherited_var(var_name, locale=I18n.locale)
