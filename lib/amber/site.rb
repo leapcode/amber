@@ -242,25 +242,54 @@ module Amber
     #
     def short_paths
       @short_paths ||= begin
-        shortpaths = {}
-        pages_in_depth_order = @page_list.collect{ |page|
-          {:page => page, :path => page.path.dup, :depth => page.path.length} if page.path.length > 1
-        }.compact.sort {|a,b| a[:depth] <=> b[:depth]}
-        pages_in_depth_order.each do |record|
-          record[:depth].times do |depth|
-            record[:path].shift
-            path = record[:path].join('/')
-            if @pages_by_path[path].nil? && shortpaths[path].nil?
-              shortpaths[path] = record[:page]
+        hash = {}
+        pages_in_path_depth_order.each do |record|
+          page = record[:page]
+          path = record[:path]
+          next if path.length == 1
+          path_prefix = path.dup
+          path.length.times do |depth|
+            path_prefix.shift
+            path_str = path_prefix.join('/')
+            if @pages_by_path[path_str].nil? && hash[path_str].nil?
+              hash[path_str] = page
             end
           end
         end
         # debug:
-        #shortpaths.each do |path, record|
+        #hash.each do |path, record|
         #  puts "#{record[:page].path.join('/')} => #{record[:path].join('/')}"
         #end
-        shortpaths
+        hash
       end
+    end
+
+    #
+    # Returns an array like this:
+    #
+    #   [
+    #     {:page => <page1>, :path => ['a', 'page1']},
+    #     {:page => <page2>, :path => ['a','b', 'page2']},
+    #   ]
+    #
+    # This array is sorted by the depth of the path (shortest first)
+    # Pages will appear multiple times (once for each path, including aliases)
+    #
+    def pages_in_path_depth_order
+      paths = {}
+      @page_list.each do |page|
+        paths[page.path] ||= page
+        locales = page.locales
+        locales << I18n.default_locale unless locales.include? I18n.default_locale
+        locales.each do |locale|
+          page.aliases(locale).each do |alias_path|
+            paths[alias_path] ||= page
+          end
+        end
+      end
+      paths.collect{|path, page| {page:page, path:path}}.sort{|a,b|
+        a[:path].length <=> a[:path].length
+      }
     end
 
   end
