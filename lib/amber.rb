@@ -22,18 +22,25 @@ module Amber
   # https://en.wikipedia.org/wiki/List_of_languages_by_number_of_native_speakers
   #
   POSSIBLE_LANGUAGES = {
-    :zh => ['中文',       'zh', 1, false],
+    :zh => ['中文',       'zh', 1, false],   # Chinese
     :es => ['Español',   'es', 2, false],
     :en => ['English',   'en', 3, false],
     :hi => ['Hindi',     'hi', 4, false],
-    :ar => ['العربية',   'ar', 5, true],
+    :ar => ['العربية',   'ar', 5, true],    # Arabic
     :pt => ['Português', 'pt', 6, false],
-    :ru => ['Pyccĸий',   'ru', 7, false],
-    :de => ['Deutsch',   'de', 8, false],
-    :fr => ['Français',  'fr', 10, false],
-    :it => ['Italiano',  'it', 11, false],
-    :el => ['Ελληνικά',  'el', 20, false],
-    :ca => ['Català',    'ca', 101, false]
+    :ru => ['Pyccĸий',   'ru', 7, false],   # Russian
+    :ja => ['日本語',     'ja', 8, false],   # Japanese
+    :pa => ['ਪੰਜਾਬੀ',  'pa', 9, false],   # Punjabi
+    :de => ['Deutsch',   'de', 10, false],
+    :vi => ['Tiếng Việt','vi', 11, false],  # Vietnamese
+    :fr => ['Français',  'fr', 12, false],
+    :ur => ['اُردُو',    'ur', 13, false],  # Urdu
+    :fa => ['فارسی',     'fa', 14, false],  # Farsi / Persian
+    :tr => ['Türkçe',    'tr', 15, false],  # Turkish
+    :it => ['Italiano',  'it', 16, false],
+    :el => ['Ελληνικά',  'el', 17, false],  # Greek
+    :pl => ['Polski',    'pl', 18, false],  # Polish
+    :ca => ['Català',    'ca', 19, false]
   }
 
   # Although everywhere else we use symbols for locales, this array should be strings:
