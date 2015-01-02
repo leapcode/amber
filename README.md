@@ -17,10 +17,12 @@ Installation
 
 Installing from gem:
 
+    sudo apt-get install rubygems ruby-dev build-essential
     sudo gem install amber
 
-Installing from source:
+Alternately, you can run directly from source:
 
+    sudo apt-get install rubygems ruby-dev build-essential
     sudo gem install bundler
     git clone https://github.com/leapcode/amber
     cd amber
