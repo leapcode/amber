@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.description = "Amber is a super simple and super flexible static website generator with support for nice localization and navigation."
   s.authors     = ["Elijah Sparrow"]
   s.email       = ["elijah@leap.se"]
-  s.files       = Dir["{lib}/**/*.rb", "{lib}/**/*.erb", "bin/*", "LICENSE", "*.md"]
+  s.files       = Dir["{lib}/**/*.rb", "{lib}/**/*.erb", "{locales}/**/*.yml", "bin/*", "LICENSE", "*.md"]
   s.homepage    = "https://github.com/leapcode/amber"
   s.license     = "AGPL"
   s.executables << 'amber'

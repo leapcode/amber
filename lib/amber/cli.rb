@@ -63,6 +63,7 @@ module Amber
     end
 
     def server(options)
+      require 'amber/server'
       site = Site.new(@root)
       Amber::Server.start(:port => (options[:port] || 8000), :site => site)
     end
