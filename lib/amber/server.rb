@@ -30,6 +30,7 @@ module Amber
 
   class StaticPageServlet < WEBrick::HTTPServlet::FileHandler
 
+    RENDERABLE_ASSET_RE = /(#{Amber::Render::Asset::SOURCE_MAP.keys.join('|')})$/
     ASSET_RE = /\.(jpg|jpeg|png|gif|webm|css|js|ico)$/
 
     def initialize(http_server, amber_server)
@@ -39,58 +40,31 @@ module Amber
     end
 
     def do_GET(request, response)
-      dest_dir = @server.site.dest_dir
-
       if path_needs_to_be_prefixed?(request.path)
         redirect_with_prefix(request, response)
         return
       end
 
       path = strip_locale_and_prefix(request.path)
-      if File.file?(File.join(dest_dir, request.path))
-        @logger.info "Serve static file %s" % File.join(dest_dir, request.path)
+
+      if renderable_asset?(path)
+        @logger.info "Rendering asset file %s" % asset_source_file(path)
+        render_asset(path, request, response)
         super(request, response)
-      elsif File.file?(File.join(dest_dir, path))
+      elsif static_file_exists?(request.path)
+        @logger.info "Serve static file %s" % static_file_path(request.path)
+        super(request, response)
+      elsif static_file_exists?(path)
         request = request.clone
         request.instance_variable_set(:@path_info, "/"+path)
-        @logger.info "Serve static file with locale prefix %s" % File.join(dest_dir, path)
+        @logger.info "Serve static file with locale prefix %s" % static_file_path(path)
         super(request, response)
       elsif path !~ ASSET_RE
-        locale = get_locale(request.path)
-        @server.site.load_pages
-        page = @server.site.find_page_by_path(path, locale)
-        if page
-          @logger.info "Serving Page %s" % page.path.join('/')
-          response.status = 200
-          response.content_type = "text/html; charset=utf-8"
-          # always refresh the page we are fetching
-          Amber::Render::Layout.reload
-          @server.site.render
-          page.render_to_file(dest_dir, :force => true)
-          file = page.destination_file(dest_dir, locale)
-          if File.exists?(file)
-            content = File.read(file)
-          else
-            file = page.destination_file(dest_dir, I18n.default_locale)
-            if File.exists?(file)
-              content = File.read(file)
-            else
-              view = Render::View.new(page, @server.site)
-              content = view.render(:text => "No file found at #{file}")
-            end
-          end
-          response.body = content
-        end
+        render_page(path, request, response)
       else
         super(request, response)
       end
     end
-    #rescue Exception => exc
-    #  @logger.error exc.to_s
-    #  @logger.error exc.backtrace
-    #  response.status = 500
-    #  response.content_type = 'text/text'
-    #  response.body = exc.to_s + "\n\n\n\n" + exc.backtrace
 
     private
 
@@ -134,6 +108,71 @@ module Amber
       response.status = 307
     end
 
-  end
+    def dst_dir
+      @server.site.dest_dir
+    end
 
+    def src_dir
+      @server.site.pages_dir
+    end
+
+    def static_file_exists?(path)
+      File.file?(File.join(dst_dir, path))
+    end
+
+    def static_file_path(path)
+      File.join(dst_dir, path)
+    end
+
+    def render_page(path, request, response)
+      locale = get_locale(request.path)
+      @server.site.load_pages
+      page = @server.site.find_page_by_path(path, locale)
+      if page
+        @logger.info "Serving Page %s" % page.path.join('/')
+        response.status = 200
+        response.content_type = "text/html; charset=utf-8"
+        # always refresh the page we are fetching
+        Amber::Render::Layout.reload
+        @server.site.render
+        page.render_to_file(dst_dir, :force => true)
+        file = page.destination_file(dst_dir, locale)
+        if File.exists?(file)
+          content = File.read(file)
+        else
+          file = page.destination_file(dst_dir, I18n.default_locale)
+          if File.exists?(file)
+            content = File.read(file)
+          else
+            view = Render::View.new(page, @server.site)
+            content = view.render(:text => "No file found at #{file}")
+          end
+        end
+        response.body = content
+      end
+    end
+
+    def renderable_asset?(path)
+      path =~ RENDERABLE_ASSET_RE && asset_source_file(path)
+    end
+
+    def asset_source_file(path)
+      dest_suffix = File.extname(path)
+      base_path = path.sub(RENDERABLE_ASSET_RE, '')
+      Amber::Render::Asset::SOURCE_MAP[dest_suffix].each do |source_suffix|
+        source_file_path = File.join(src_dir, base_path + source_suffix)
+        if File.exists?(source_file_path)
+          return source_file_path
+        end
+      end
+      return nil
+    end
+
+    def render_asset(path, request, response)
+      src_file = asset_source_file(path)
+      dst_file = [dst_dir, path].join
+      Amber::Render::Asset.render(src_file, dst_file)
+    end
+
+  end
 end
