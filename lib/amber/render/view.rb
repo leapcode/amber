@@ -9,6 +9,8 @@ require 'amber/render/helpers/html_helper'
 require 'amber/render/helpers/navigation_helper'
 require 'amber/render/helpers/haml_helper'
 require 'amber/render/helpers/language_helper'
+require 'amber/render/helpers/date_helper'
+require 'amber/render/helpers/blog_helper'
 
 module Amber
   module Render
@@ -22,6 +24,7 @@ module Amber
       include NavigationHelper
       include HamlHelper
       include LanguageHelper
+      include BlogHelper
 
       def initialize(page, site)
         @page = page
@@ -45,6 +48,9 @@ module Amber
       #
       def render(options={}, locals={}, toc_only=false, &block)
         push_context @locals, @page
+        if options.is_a?(Hash) && options[:locals].is_a?(Hash)
+          locals   = options.delete(:locals)
+        end
         @locals    = @locals.merge(locals)
         locale     = I18n.locale = @locals[:locale]
         options    = parse_render_options(locale, options)

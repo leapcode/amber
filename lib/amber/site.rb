@@ -10,7 +10,7 @@ module Amber
     attr_accessor :continue_on_error
 
     # @config is the primary SiteConfiguration
-    def_delegators :@config, :dest_dir, :locales, :default_locale, :path_prefix
+    def_delegators :@config, :pages_dir, :dest_dir, :locales, :default_locale, :path_prefix
 
     def initialize(root_dir)
       @continue_on_error = true

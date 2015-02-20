@@ -36,7 +36,8 @@ module Amber
     attr_accessor :children
 
     extend Forwardable
-    def_delegators :@site, :pages, :find_page, :find_pages, :find_page_by_path, :find_page_by_name, :continue_on_error
+    def_delegators :@site, :pages, :find_page, :find_pages, :find_page_by_path,
+      :find_page_by_name, :continue_on_error, :root
 
     ##
     ## CLASS METHODS

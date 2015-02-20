@@ -124,7 +124,7 @@ module Amber
 
       def render_haml(file_path, view)
         template = Tilt::HamlTemplate.new(file_path, {:format => :html5, :default_encoding => 'UTF-8'})
-        add_bracket_links(view, template.render(view))
+        add_bracket_links(view, template.render(view, view.locals))
       end
 
       def render_textile(view, content)

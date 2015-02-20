@@ -91,11 +91,12 @@ module Amber
       # inserts an directory index built from the page's children
       #
       # options:
-      #   :levels         -- the max levels to descend, default is 1
+      #   :levels         -- the max levels to descend (default 1)
       #   :page           -- StaticPage instance or nil
-      #   :include_toc    -- true or false
+      #   :include_toc    -- true or false (default false)
       #   :order_by       -- arguments to PageArray#order_by
-      #   :heading        -- heading level to use
+      #   :heading        -- heading level to use (default 2)
+      #   :summary        -- to show summaries or not (default true)
       #
       def child_summaries(options={})
         page = options.delete(:page) || @page
@@ -121,16 +122,7 @@ module Amber
           children.each do |child|
             child_page = child.is_a?(Amber::Menu) ? page.child(child.name) : child
             next unless child_page
-            haml "h#{heading}" do
-              haml :a, child_page.nav_title(locale), :href => amber_path(child_page)
-            end
-            if summary = child_page.prop(locale, 'summary')
-              haml :p, summary
-            end
-            if options[:include_toc]
-              toc_html = render_toc(child_page, :locale => locale)
-              haml toc_html
-            end
+            render_page_summary(child_page, heading, options)
             if level < levels_max
               haml(child_summaries({
                 :page => child_page,
@@ -138,13 +130,35 @@ module Amber
                 :level => level+1,
                 :include_toc => options[:include_toc],
                 :order_by => options[:order_by],
-                :heading => heading+1
+                :heading => heading+1,
+                :summary => options[:summary]
               }))
             end
           end
         end
       rescue Exception => exc
         Amber.log_exception(exc)
+      end
+
+      def render_page_summary(page, heading=2, options={})
+        locale = @locals[:locale]
+        klass = options[:class] || '.page-summary'
+        haml ".#{klass}" do
+          haml "h#{heading}" do
+            haml :a, page.nav_title(locale), :href => amber_path(page)
+          end
+          if options[:summary] != false
+            if summary = page.prop(locale, 'summary')
+              haml '.summary', summary
+            elsif preview = page.prop(locale, 'preview')
+              haml '.preview', preview
+            end
+          end
+          if options[:include_toc]
+            toc_html = render_toc(page, :locale => locale)
+            haml toc_html
+          end
+        end
       end
 
       private
@@ -186,14 +200,3 @@ module Amber
     end
   end
 end
-
-
-=begin
-
-  def act_as(page)
-    page = site.find_page(page)
-    @current_page_path = page.path
-    page_body(page)
-  end
-
-=end
