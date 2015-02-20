@@ -1,7 +1,11 @@
 #!/usr/bin/env ruby
 
 if ARGV.include?('--debug')
-  require 'debugger'
+  if RUBY_VERSION =~ /^2/
+    require 'byebug'
+  else
+    require 'debugger'
+  end
 end
 
 begin
