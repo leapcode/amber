@@ -1,4 +1,17 @@
-GNU AFFERO GENERAL PUBLIC LICENSE
+Licenses
+========================================
+
+Amber code is copyright (c) 2015 LEAP Encrption Access Project and licensed
+under the GNU AGPL, a copy of which is provided below.
+
+Additionally, Amber redistributes the localization files from Rails (in
+`amber/locales/rails-i18n/`). These files are copyright (c) 2008-2012 Sven
+Fuchs and contributors (see https://github.com/svenfuchs/rails-
+i18n/contributors), and distributed under an MIT license.
+
+GNU Affero General Public License
+========================================
+
                        Version 3, 19 November 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
