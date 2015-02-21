@@ -1,4 +1,4 @@
-
+# encoding: utf-8
 
 require 'i18n'
 require 'i18n/backend/fallbacks'
