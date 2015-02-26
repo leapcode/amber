@@ -29,11 +29,10 @@ def process_command_line_arguments
       when 'rebuild'     then @command = ARGV.shift
       when 'clean'       then @command = 'clear'; ARGV.shift
       when 'clear'       then @command = ARGV.shift
-      when 'server'      then @command = ARGV.shift
+      when 'server'      then @command = ARGV.shift; @command_arg = ARGV.shift
       when 'apache'      then @command = ARGV.shift; @command_arg = ARGV.shift
       when 'version'     then version
       when '--version'   then version
-      when '--port'      then ARGV.shift; @port = ARGV.shift
       when '--debug'     then ARGV.shift
       when '--help'      then usage
       when 'help'        then usage
@@ -52,21 +51,20 @@ def usage(msg=nil)
   $stderr.puts("Usage: #{File.basename($0)} [OPTIONS] COMMAND")
   $stderr.puts
   $stderr.puts("COMMAND may be one or more of:
-  init DIRECTORY   -- create a new amber site in DIRECTORY
-  build            -- render static html pages
-  rebuild          -- runs `clear` then `build`
-  server           -- runs mini-web server at localhost:8000
-  clear            -- erase static html pages
-  clean            -- alias for clear
-  apache DIRECTORY -- prints out appropriate apache2 config for the given DIRECTORY
-  help             -- this message
-  version          -- print version and exit")
+  init DIRECTORY         -- Create a new amber site in DIRECTORY.
+  build                  -- Render static html pages.
+  rebuild                -- Runs `clear` then `build`.
+  server [[HOST][:PORT]] -- Runs mini web server bound to HOST:PORT (defaults to #{Amber::DEFAULT_HOST}:#{Amber::DEFAULT_PORT}).
+  clear                  -- Erase static HTML pages.
+  clean                  -- Alias for `clear`.
+  apache DIRECTORY       -- Prints out appropriate apache2 config for the given DIRECTORY.
+  help                   -- This message.
+  version                -- Print version and exit.")
   $stderr.puts
   $stderr.puts("OPTIONS may be one or more of:
-  -v               -- run in verbose mode
-  --version        -- print version and exit
-  --debug          -- enable debugger
-  --port PORT      -- sets the port for the `server` command (default 8000)")
+  -v                     -- Run in verbose mode.
+  --version              -- Print version and exit.
+  --debug                -- Enable debugger.")
   exit(2)
 end
 

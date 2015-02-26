@@ -16,6 +16,9 @@ module Amber
   # Possible page suffixes. Only files with these suffixes are treated as pages
   PAGE_SUFFIXES = %w(haml md markdown text textile rst html html.haml)
 
+  DEFAULT_HOST = '127.0.0.1'
+  DEFAULT_PORT = '8000'
+
   def self.env
     if defined?(TESTING) && TESTING==true
       :test

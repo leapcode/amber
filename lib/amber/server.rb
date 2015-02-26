@@ -15,8 +15,9 @@ module Amber
 
     def initialize(options)
       @site = options[:site]
+      @host = options[:host]
       @port = options[:port]
-      @server = WEBrick::HTTPServer.new :Port => @port, :BindAddress => '127.0.0.1', :DocumentRoot => @site.dest_dir
+      @server = WEBrick::HTTPServer.new :Port => @port, :BindAddress => @host, :DocumentRoot => @site.dest_dir
       @server.mount '/', StaticPageServlet, self
     end
 

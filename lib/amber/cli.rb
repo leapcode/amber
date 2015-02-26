@@ -64,8 +64,18 @@ module Amber
 
     def server(options)
       require 'amber/server'
+      host = nil, port = nil
+      if options[:arg]
+        host, port = options[:arg].split(':')
+      end
+      if host.nil? || host.empty?
+        host = DEFAULT_HOST
+      end
+      if port.nil? || port.empty?
+        port = DEFAULT_PORT
+      end
       site = Site.new(@root)
-      Amber::Server.start(:port => (options[:port] || 8000), :site => site)
+      Amber::Server.start(:port => port, :host => host, :site => site)
     end
 
     def apache(options)
