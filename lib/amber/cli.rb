@@ -64,7 +64,8 @@ module Amber
 
     def server(options)
       require 'amber/server'
-      host = nil, port = nil
+      host = nil
+      port = nil
       if options[:arg]
         host, port = options[:arg].split(':')
       end
