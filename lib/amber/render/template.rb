@@ -42,25 +42,26 @@ module Amber
       end
 
       #
-      # returns rendered content or title, depending on render_mode
+      # returns rendered content or title, depending on render_mode.
+      # anchors are always automatically added to content headings.
       #
       def render(view, options={})
         view.locals[:_type] = @type
         render_mode = options.delete(:mode) || :content
-        toc = options.delete(:toc)
+        toc_option = options.delete(:toc)
         if render_mode == :title
           render_title(view)
         else
           html = render_html(view)
+          toc_renderer = RegexTableOfContents.new(html, options)
           if render_mode == :toc
-            RegexTableOfContents.new(html, options).to_toc
-          elsif toc === false
-            html
-          elsif toc || render_mode == :toc_and_content
-            toc = RegexTableOfContents.new(html, options)
-            %(<div id="TOC">%s</div>\n\n%s) % [toc.to_toc, toc.to_html]
+            toc_renderer.to_toc
+          elsif toc_option === false
+            toc_renderer.to_html
+          elsif toc_option || render_mode == :toc_and_content
+            %(<div id="TOC">%s</div>\n\n%s) % [toc_renderer.to_toc, toc_renderer.to_html]
           else
-            html
+            toc_renderer.to_html
           end
         end
       end
