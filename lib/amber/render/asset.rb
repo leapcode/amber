@@ -31,6 +31,10 @@ module Amber
           File.open(new_dst_file,'w') do |w|
             w.write(content)
           end
+        elsif File.basename(src_file) == '.htaccess'
+          # existing htaccess file must be copied, not linked, since
+          # the render will change its contents.
+          FileUtils.cp(src_file, dst_file)
         else
           File.link(src_file, dst_file)
         end

@@ -56,7 +56,7 @@ module Amber
       if @config.short_paths
         render_short_path_symlinks
       end
-      Render::Apache.write_htaccess(@config, @config.dest_dir)
+      Render::Apache.write_htaccess(@config, @config.pages_dir, @config.dest_dir)
       puts
     end
 
