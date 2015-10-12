@@ -1,5 +1,10 @@
 # encoding: utf-8
 
+# enforce UTF8 as the default, even if LANG environment
+# variable says otherwise.
+Encoding.default_internal = Encoding::UTF_8
+Encoding.default_external = Encoding::UTF_8
+
 require 'logger'
 
 # ensure that we load sass from a gem, not the sass included in some
