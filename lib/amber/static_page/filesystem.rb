@@ -223,24 +223,22 @@ module Amber
     #
     # (with or without leading hypen works)
     #
-    # this text is extracted and evaluated as ruby to set properties.
+    # This text is extracted and evaluated as ruby to set properties.
+    #
+    # The first paragraph is loaded into the property "excerpt".
     #
     def load_properties
       props = PageProperties.new(self)
       content_files.each do |locale, content_file|
-        if File.extname(content_file) == '.haml'
+        if type_from_path(content_file) == :haml
           props.eval(File.read(content_file, :encoding => 'UTF-8'), locale)
         else
-          headers = []
-          File.open(content_file, :encoding => 'UTF-8') do |f|
-            while (line = f.gets) =~ /^(- |)@\w/
-              if line !~ /^-/
-                line = '- ' + line
-              end
-              headers << line
-            end
+          headers, excerpt = parse_headers(content_file)
+          props.eval(headers, locale)
+          if !excerpt.empty?
+            props.set_prop(locale, "excerpt", excerpt)
           end
-          props.eval(headers.join("\n"), locale)
+          props.set_prop(locale, "content_type", type_from_path(content_file))
         end
         cleanup_properties(props, locale)
       end
@@ -253,6 +251,80 @@ module Amber
     def cleanup_properties(props, locale)
       if props.prop(locale, :alias)
         props.set_prop(locale, :alias, [props.prop(locale, :alias)].flatten)
+      end
+    end
+
+    #
+    # parses a content_file's property headers and tries to extract the
+    # first paragraph.
+    #
+    def parse_headers(content_file)
+      headers = []
+      para1 = []
+      para2 = []
+      file_type = type_from_path(content_file)
+
+      File.open(content_file, :encoding => 'UTF-8') do |f|
+        while (line = f.gets) =~ /^(- |)@\w/
+          if line !~ /^-/
+            line = '- ' + line
+          end
+          headers << line
+        end
+        # eat empty lines
+        while line = f.gets
+          break unless line =~ /^\s*$/
+        end
+        # grab first two paragraphs
+        para1 << line
+        while line = f.gets
+          break if line =~ /^\s*$/
+          para1 << line
+        end
+        while line = f.gets
+          break if line =~ /^\s*$/
+          para2 << line
+        end
+      end
+
+      headers = headers.join
+      para1 = para1.join
+      para2 = para2.join
+      excerpt = ""
+
+      # pick the first non-heading paragraph.
+      # this is stupid, and chokes on nested headings.
+      # but is also cheap and fast :)
+      if file_type == :textile
+        if para1 =~ /^h[1-5]\. /
+          excerpt = para2
+        else
+          excerpt = para1
+        end
+      elsif file_type == :markdown
+        if para1 =~ /^#+ / || para1 =~ /^(===+|---+)\s*$/m
+          excerpt = para2
+        else
+          excerpt = para1
+        end
+      end
+      return [headers, excerpt]
+    end
+
+    def type_from_path(path)
+      case File.extname(path)
+      when ".text", ".textile"
+        :textile
+      when ".md", ".markdown"
+        :markdown
+      when ".haml"
+        :haml
+      when ".html"
+        :html
+      when ".erb"
+        :erb
+      else
+        :unknown
       end
     end
 
