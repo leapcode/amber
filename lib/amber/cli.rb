@@ -13,7 +13,7 @@ module Amber
       new_dir = options[:arg]
       mkdir(new_dir, nil)
       mkdir('amber', new_dir)
-      touch('amber/config.rb', new_dir)
+      copy_template_file('config.rb', 'amber', new_dir)
       touch('amber/menu.txt', new_dir)
       mkdir('amber/layouts', new_dir)
       mkdir('amber/locales', new_dir)
@@ -116,6 +116,17 @@ module Amber
         FileUtils.touch(path)
         puts "* Creating `#{File.basename(context)}/#{file}`"
       end
+    end
+
+    def copy_template_file(template_file, destination, context)
+      template_file_path = File.dirname(__FILE__) + "/templates/#{template_file}"
+      copy(template_file_path, destination, context)
+    end
+
+    def copy(source, destination, context)
+      destination_path = File.join(context, destination)
+      FileUtils.copy(source, destination_path)
+      puts "* Creating `#{File.basename(context)}/#{destination}/#{File.basename(source)}`"
     end
 
   end
