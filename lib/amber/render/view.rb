@@ -95,10 +95,10 @@ module Amber
         return search_path if File.exist?(search_path)
         searches = [
           search_path,
-          "#{site.pages_dir}/#{path}",
-          "#{page.file_path}/#{path}",
-          "#{File.dirname(page.file_path)}/#{path}",
-          "#{site.config_dir}/#{path}"
+          "#{site.pages_dir}/#{search_path}",
+          "#{page.file_path}/#{search_path}",
+          "#{File.dirname(page.file_path)}/#{search_path}",
+          "#{site.config_dir}/#{search_path}"
         ]
         # attempt to find a file with preferred locale
         searches.each do |path|
