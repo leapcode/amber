@@ -5,6 +5,8 @@
 require 'i18n'
 require 'pathname'
 require 'fileutils'
+require 'json'
+require 'yaml'
 
 module Amber
   class StaticPage
@@ -106,11 +108,19 @@ module Amber
     PAGE_SUFFIXES_RE = /(?<suffix>#{Amber::PAGE_SUFFIXES.join('|')})/
     PAGE_SUFFIXES_GLOB = "{#{Amber::PAGE_SUFFIXES.join(',')}}"
 
+    # e.g. json, yaml
+    VAR_SUFFIXES_RE = /(?<suffix>#{Amber::VAR_SUFFIXES.join('|')})/
+    VAR_SUFFIXES_GLOB = "{#{Amber::VAR_SUFFIXES.join(',')}}"
+
     # e.g. en.haml or es.md or index.pt.text
     LOCALE_FILE_MATCH_RE = /^(index\.)?#{LOCALES_RE}\.#{PAGE_SUFFIXES_RE}$/
     LOCALE_FILE_MATCH_GLOB = "{index.,}#{LOCALES_GLOB}.#{PAGE_SUFFIXES_GLOB}"
 
+    VAR_FILE_MATCH_RE = /^(index\.)?#{LOCALES_RE}\.#{VAR_SUFFIXES_RE}$/
+    VAR_FILE_MATCH_GLOB = "{index.,}#{LOCALES_GLOB}.#{VAR_SUFFIXES_GLOB}"
+
     SIMPLE_FILE_MATCH_RE = lambda {|name| /^(#{Regexp.escape(name)})(\.#{LOCALES_RE})?\.#{PAGE_SUFFIXES_RE}$/ }
+    SIMPLE_VAR_MATCH_RE = lambda {|name| /^(#{Regexp.escape(name)})(\.#{LOCALES_RE})?\.#{VAR_SUFFIXES_RE}$/ }
 
     private
 
@@ -311,6 +321,45 @@ module Amber
       return [headers, excerpt]
     end
 
+    ##
+    ## VARIABLES
+    ## Variables are associated with a page, but unlike properties they are not
+    ## inheritable. Variables are defined in a separate file.
+    ##
+    def variable_files
+      if @simple_page
+        directory = File.dirname(@file_path)
+        regexp = SIMPLE_VAR_MATCH_RE.call(@name)
+      else
+        directory = @file_path
+        regexp = VAR_FILE_MATCH_RE
+      end
+      hsh = {}
+      Dir.foreach(directory) do |file|
+        if file && match = regexp.match(file)
+          locale = match['locale'] || I18n.default_locale
+          hsh[locale.to_sym] = File.join(directory, file)
+        end
+      end
+      hsh
+    end
+
+    def load_variables
+      vars = {}
+      variable_files.each do |locale, var_file|
+        begin
+          if var_file =~ /\.ya?ml$/
+            vars[locale] = YAML.load_file(var_file)
+          elsif var_file =~ /\.json$/
+            vars[locale] = JSON.parse(File.read(var_file))
+          end
+        rescue StandardError => exc
+          Amber.logger.error('ERROR: could not load file #{var_file}: ' + exc.to_s)
+        end
+      end
+      return vars
+    end
+
     def type_from_path(path)
       case File.extname(path)
       when ".text", ".textile"
@@ -331,7 +380,7 @@ module Amber
     # RAILS
     #def is_haml_template?(locale)
     #  content_file(locale) =~ /\.haml$/
-    #  #@suffix == '.haml' || File.exists?(self.absolute_template_path(locale) + '.haml')
+    #  #@suffix == '.haml' || File.exist?(self.absolute_template_path(locale) + '.haml')
     #end
 
   end

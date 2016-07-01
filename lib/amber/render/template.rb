@@ -125,7 +125,10 @@ module Amber
 
       def render_haml(file_path, view)
         template = Tilt::HamlTemplate.new(file_path, {:format => :html5, :default_encoding => 'UTF-8'})
-        add_bracket_links(view, template.render(view, view.locals))
+        html = template.render(view, view.locals)
+        html = add_variables(view, html)
+        html = add_bracket_links(view, html)
+        return html
       rescue Haml::Error => ex
         msg = "Line #{ex.line + 1} of file `#{file_path}`: #{ex.to_s}"
         Amber::logger.error(msg)
@@ -133,28 +136,40 @@ module Amber
       end
 
       def render_textile(view, content)
+        content = add_variables(view, content)
         content = add_bracket_links(view, content)
-        Autolink.auto_link(RedCloth.new(content).to_html)
+        return Filter::Autolink.run(RedCloth.new(content).to_html)
       end
 
       def render_markdown(view, content)
+        content = add_variables(view, content)
         content = add_bracket_links(view, content)
-        RDiscount.new(content, :smart, :autolink).to_html
+        return RDiscount.new(content, :smart, :autolink).to_html
       end
 
       def render_raw(view, content)
-        add_bracket_links(view, content)
+        content = add_variables(view, content)
+        content = add_bracket_links(view, content)
+        return content
       end
 
       def render_none(view, content)
-        content
+        return content
       end
 
       def add_bracket_links(view, content)
-        content = Bracketlink.bracket_link(content) do |from, to|
+        content = Filter::Bracketlink.run(content) do |from, to|
           view.link({from => to})
         end
-        content
+        return content
+      end
+
+      def add_variables(view, content)
+        locale = view.locals[:locale]
+        content = Filter::Variables.run(content) do |var_name|
+          view.page.var(var_name, locale) || var_name
+        end
+        return content
       end
 
       def type_from_file(file_path)

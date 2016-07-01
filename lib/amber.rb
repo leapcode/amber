@@ -21,6 +21,10 @@ module Amber
   # Possible page suffixes. Only files with these suffixes are treated as pages
   PAGE_SUFFIXES = %w(haml md markdown text textile rst html html.haml)
 
+  # Possible variable file suffixes. Only files with these suffixesare treated
+  # as variable files.
+  VAR_SUFFIXES = %w(json yaml yml)
+
   DEFAULT_HOST = '127.0.0.1'
   DEFAULT_PORT = '8000'
 
@@ -56,7 +60,8 @@ require 'amber/render/layout'
 require 'amber/render/view'
 require 'amber/render/template'
 require 'amber/render/asset'
-require 'amber/render/autolink'
-require 'amber/render/bracketlink'
 require 'amber/render/table_of_contents'
 require 'amber/render/apache'
+require 'amber/render/filter/autolink'
+require 'amber/render/filter/bracketlink'
+require 'amber/render/filter/variables'

@@ -112,6 +112,14 @@ module Amber
       @props.prop(*args)
     end
 
+    def vars
+      @vars ||= load_variables
+    end
+
+    def var(name, locale=I18n.locale)
+      (vars[locale] || vars[I18n.default_locale] || {})[name.to_s]
+    end
+
     #
     # Returns array of locale symbols for all locales with properties set
     # Note: there might be a content for a locale that does not show up in this array,
@@ -119,6 +127,10 @@ module Amber
     #
     def locales
       @props.locales
+    end
+
+    def path_str
+      self.path.join('/')
     end
 
     #

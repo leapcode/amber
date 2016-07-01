@@ -15,7 +15,7 @@ class RenderTest < Minitest::Test
       "[[ how do I? => carefully ]]" => ['how do I?', 'carefully']
     }
     texts.each do |markup, expected|
-      Amber::Render::Bracketlink.bracket_link(markup) do |from, to|
+      Amber::Render::Filter::Bracketlink.run(markup) do |from, to|
         assert_equal expected, [from, to]
       end
     end

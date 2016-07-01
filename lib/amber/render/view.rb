@@ -57,6 +57,7 @@ module Amber
         @page      = options[:page] if options[:page]
         render_toc = should_render_toc?(locale, options, @page)
         template   = pick_template(locale, options)
+        return unless template
         if toc_only
           template.render(self, :mode => :toc, :href_base => options[:href_base])
         else
@@ -91,7 +92,7 @@ module Amber
       # called only from parse_render_options()
       #
       def find_file(path, site, page, locale)
-        return path if File.exists?(path)
+        return path if File.exist?(path)
         search = [
           path,
           "#{site.pages_dir}/#{path}",
@@ -101,21 +102,22 @@ module Amber
         ]
         # attempt to find a file with preferred locale
         search.each do |path|
-          return path if File.exists?(path)
+          return path if File.exist?(path)
           Dir["#{path}.#{locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
-            return path_with_locale if File.exists?(path_with_locale)
+            return path_with_locale if File.exist?(path_with_locale)
           end
           Dir["#{path}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_suffix|
-            return path_with_suffix if File.exists?(path_with_suffix)
+            return path_with_suffix if File.exist?(path_with_suffix)
           end
         end
         # attempt to find a file with default locale
         search.each do |path|
           Dir["#{path}.#{I18n.default_locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
-            return path_with_locale if File.exists?(path_with_locale)
+            return path_with_locale if File.exist?(path_with_locale)
           end
         end
-        raise MissingTemplate.new(path)
+        Amber.logger.error("No such path `#{path}` from `#{page.content_file(locale)}`.")
+        return nil
       end
 
       def partialize(path)
@@ -181,6 +183,8 @@ module Amber
           Template.new(file: options[:partial], partial: true)
         elsif options[:text]
           Template.new(content: options[:text], type: (options[:type] || :text))
+        else
+          nil
         end
       end
 
