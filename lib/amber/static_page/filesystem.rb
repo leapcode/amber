@@ -209,9 +209,12 @@ module Amber
         []
       else
         Dir.foreach(@file_path).collect { |file|
-          if file && file !~ /\.#{PAGE_SUFFIXES_RE}$/
-            file unless File.directory?(File.join(@file_path, file))
-          end
+          is_asset = \
+            file &&
+            file !~ /\.#{PAGE_SUFFIXES_RE}$/ &&
+            file !~ /^#{VAR_FILE_MATCH_RE}$/ &&
+            !File.directory?(File.join(@file_path, file))
+          file if is_asset
         }.compact
       end
     end
