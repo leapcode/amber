@@ -175,7 +175,7 @@ module Amber
       def type_from_file(file_path)
         suffix = File.extname(file_path)
         if suffix
-          suffix.sub! /^\./, ''
+          suffix.sub!(/^\./, '')
           suffix = suffix.to_sym
         end
         suffix

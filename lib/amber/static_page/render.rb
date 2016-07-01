@@ -122,7 +122,7 @@ module Amber
         content_file = content_file(file_locale)
         next unless content_file
         dest = destination_file(dest_dir, file_locale)
-        unless Dir.exists?(File.dirname(dest))
+        unless Dir.exist?(File.dirname(dest))
           FileUtils.mkdir_p(File.dirname(dest))
         end
         if options[:force] || !File.exist?(dest) || File.mtime(content_file) > File.mtime(dest)

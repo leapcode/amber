@@ -138,11 +138,11 @@ module Amber
         @server.site.render
         page.render_to_file(dst_dir, :force => true)
         file = page.destination_file(dst_dir, locale)
-        if File.exists?(file)
+        if File.exist?(file)
           content = File.read(file)
         else
           file = page.destination_file(dst_dir, I18n.default_locale)
-          if File.exists?(file)
+          if File.exist?(file)
             content = File.read(file)
           else
             view = Render::View.new(page, @server.site)
@@ -162,7 +162,7 @@ module Amber
       base_path = path.sub(RENDERABLE_ASSET_RE, '')
       Amber::Render::Asset::SOURCE_MAP[dest_suffix].each do |source_suffix|
         source_file_path = File.join(src_dir, base_path + source_suffix)
-        if File.exists?(source_file_path)
+        if File.exist?(source_file_path)
           return source_file_path
         end
       end

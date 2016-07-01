@@ -138,8 +138,8 @@ class ApacheTest < Minitest::Test
     uri = URI(APACHE_URL + path)
     response = Net::HTTP.get_response(uri)
     if response_text =~ /^location:(.*)/
-      assert response.header['location'], "for path `#{path}`, location header should be set (was #{response.code}: #{response.body})"
-      assert_equal $1, response.header['location'].sub(APACHE_URL, ''), "bad redirect from `#{path}`"
+      assert response['location'], "for path `#{path}`, location header should be set (was #{response.code}: #{response.body})"
+      assert_equal $1, response['location'].sub(APACHE_URL, ''), "bad redirect from `#{path}`"
       status ||= 307
     else
       body = response.body.gsub(/<\/?p>\n?/, '')

@@ -144,9 +144,9 @@ module Amber
     def aliases(locale=I18n.default_locale)
       @aliases ||= begin
         aliases_hash = Hash.new([])
-        @props.locales.each do |locale|
-          aliases = @props.prop_without_inheritance(locale, :alias)
-          aliases_hash[locale] = begin
+        @props.locales.each do |l|
+          aliases = @props.prop_without_inheritance(l, :alias)
+          aliases_hash[l] = begin
             if aliases.nil?
               []
             else

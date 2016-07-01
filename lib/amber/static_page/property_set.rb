@@ -39,11 +39,11 @@ module Amber
       #
       def get(property_name, inheritable_only=false)
         if inheritable_only || @this.nil?
-          instance_variable_get("@#{property_name}")
+          safe_instance_get("@#{property_name}")
         else
           value = @this.get(property_name)
           if value.nil?
-            value = instance_variable_get("@#{property_name}")
+            value = safe_instance_get("@#{property_name}")
           end
           value
         end
@@ -68,11 +68,22 @@ module Amber
       def to_s
         "<" + instance_variables.map{|v| "#{v}=#{instance_variable_get(v)}"}.join(', ') + ">"
       end
+
+      private
+
+      def safe_instance_get(prop_name)
+        if !instance_variable_defined?(prop_name)
+          instance_variable_set(prop_name, nil)
+        end
+        instance_variable_get(prop_name)
+      end
     end
 
     class ThisPropertySet < PropertySet
       def initialize
+        @this = nil
       end
     end
+
   end
 end

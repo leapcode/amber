@@ -6,7 +6,7 @@ module Amber
         limit = options[:limit] || @site.pagination_size
         order = options[:order] || :posted_at
         direction = options[:direction] || :desc
-        partial = options[:partial]
+        #partial = options[:partial]
         if options[:path]
           @site.find_page(options[:path])
         else

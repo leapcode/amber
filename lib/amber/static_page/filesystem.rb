@@ -208,7 +208,6 @@ module Amber
       if @simple_page
         []
       else
-        assets = {}
         Dir.foreach(@file_path).collect { |file|
           if file && file !~ /\.#{PAGE_SUFFIXES_RE}$/
             file unless File.directory?(File.join(@file_path, file))

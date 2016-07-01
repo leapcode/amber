@@ -8,7 +8,7 @@ module Amber
         template = Tilt::ERBTemplate.new(template_path("htaccess.erb"))
 
         tail_content = nil
-        if File.exists?(src_htaccess_file)
+        if File.exist?(src_htaccess_file)
           tail_content = File.read(src_htaccess_file)
         end
         File.open(dst_htaccess_file, 'w', :encoding => 'UTF-8') do |f|

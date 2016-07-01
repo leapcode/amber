@@ -40,8 +40,8 @@ module Amber
       site = Site.new(@root)
       site.continue_on_error = false
       site.load_pages
-      FileUtils.mkdir_p(site.dest_dir) unless File.exists?(site.dest_dir)
-      gitkeep = File.exists?(File.join(site.dest_dir, '.gitkeep'))
+      FileUtils.mkdir_p(site.dest_dir) unless File.exist?(site.dest_dir)
+      gitkeep = File.exist?(File.join(site.dest_dir, '.gitkeep'))
       temp_render = File.join(File.dirname(site.dest_dir), 'public-tmp')
       temp_old_pages = File.join(File.dirname(site.dest_dir), 'remove-me')
       site.with_destination(temp_render) do
@@ -58,8 +58,8 @@ module Amber
       end
     ensure
       # cleanup if something goes wrong.
-      FileUtils.rm_r(temp_render) if temp_render && File.exists?(temp_render)
-      FileUtils.rm_r(temp_old_pages) if temp_old_pages && File.exists?(temp_old_pages)
+      FileUtils.rm_r(temp_render) if temp_render && File.exist?(temp_render)
+      FileUtils.rm_r(temp_old_pages) if temp_old_pages && File.exist?(temp_old_pages)
     end
 
     def server(options)
@@ -100,8 +100,8 @@ module Amber
         path = dir
         print_path = dir
       end
-      unless Dir.exists?(path)
-        if File.exists?(path)
+      unless Dir.exist?(path)
+        if File.exist?(path)
           puts "Could not make directory `#{print_path}`. File already exists."
           exit(1)
         end
@@ -112,7 +112,7 @@ module Amber
 
     def touch(file, context)
       path = File.join(context, file)
-      unless File.exists?(path)
+      unless File.exist?(path)
         FileUtils.touch(path)
         puts "* Creating `#{File.basename(context)}/#{file}`"
       end

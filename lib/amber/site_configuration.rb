@@ -56,6 +56,7 @@ module Amber
     #
     def initialize(site, root_dir, options={})
       @children = []
+      @path_prefix = nil
       @site = site
       @root_dir = File.expand_path(find_in_directory_tree('amber', 'config.rb', root_dir))
       if @root_dir == '/'
@@ -119,7 +120,7 @@ module Amber
 
     def config_path(file)
       path = File.join(@config_dir, file)
-      if File.exists?(path)
+      if File.exist?(path)
         path
       else
         nil
@@ -134,7 +135,7 @@ module Amber
       search_dir = directory_tree || Dir.pwd
       while search_dir != "/"
         Dir.foreach(search_dir) do |f|
-          if f == target_dir_name && File.exists?(File.join(search_dir, f,target_file_name))
+          if f == target_dir_name && File.exist?(File.join(search_dir, f,target_file_name))
             return search_dir
           end
         end

@@ -91,17 +91,17 @@ module Amber
       # search possible paths for the file to be rendered.
       # called only from parse_render_options()
       #
-      def find_file(path, site, page, locale)
-        return path if File.exist?(path)
-        search = [
-          path,
+      def find_file(search_path, site, page, locale)
+        return search_path if File.exist?(search_path)
+        searches = [
+          search_path,
           "#{site.pages_dir}/#{path}",
           "#{page.file_path}/#{path}",
           "#{File.dirname(page.file_path)}/#{path}",
           "#{site.config_dir}/#{path}"
         ]
         # attempt to find a file with preferred locale
-        search.each do |path|
+        searches.each do |path|
           return path if File.exist?(path)
           Dir["#{path}.#{locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
             return path_with_locale if File.exist?(path_with_locale)
@@ -111,12 +111,12 @@ module Amber
           end
         end
         # attempt to find a file with default locale
-        search.each do |path|
-          Dir["#{path}.#{I18n.default_locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
+        searches.each do |path2|
+          Dir["#{path2}.#{I18n.default_locale}.#{StaticPage::PAGE_SUFFIXES_GLOB}"].each do |path_with_locale|
             return path_with_locale if File.exist?(path_with_locale)
           end
         end
-        Amber.logger.error("No such path `#{path}` from `#{page.content_file(locale)}`.")
+        Amber.logger.error("No such path `#{path2}` from `#{page.content_file(locale)}`.")
         return nil
       end
 

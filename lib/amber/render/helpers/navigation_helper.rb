@@ -108,7 +108,7 @@ module Amber
         levels_max = options[:levels] || 1
         level      = options.delete(:level) || 1
         heading    = options.delete(:heading) || 2
-        locale     = @locals[:locale]
+        #locale     = @locals[:locale]
         menu       = submenu_for_page(page)
         if menu && menu.children.any?
           children = menu.children

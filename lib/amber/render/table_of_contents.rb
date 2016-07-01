@@ -27,6 +27,7 @@ module Amber::Render
       @heading_anchors = {}
       @options = options
       @options[:tag] ||= 'ol'
+      @parsed = nil
     end
 
     def to_html

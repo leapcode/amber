@@ -81,8 +81,8 @@ module Amber
     # Which would match "/services/chat/security" but not "/services/security"
     #
     def find_pages(filter)
-     filter = filter.downcase
-     if filter =~ /\//
+      filter = filter.downcase
+      if filter =~ /\//
         path = filter.split('/').map{|segment| segment.gsub(/[^0-9a-z_-]/, '')}
         path_str = path.join('/')
         if (page = @pages_by_path[path_str])
@@ -152,9 +152,9 @@ module Amber
           @root
         else
           name = File.basename(config.path)
-          page = StaticPage.new(find_parent(config.path), name, config.pages_dir, config.path_prefix)
-          add_page(page)
-          page
+          sub_root = StaticPage.new(find_parent(config.path), name, config.pages_dir, config.path_prefix)
+          add_page(sub_root)
+          sub_root
         end
       end
       base_page.config = config

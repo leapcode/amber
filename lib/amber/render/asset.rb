@@ -19,10 +19,10 @@ module Amber
       }
 
       def self.render(src_file, dst_file)
-        unless Dir.exists?(File.dirname(dst_file))
+        unless Dir.exist?(File.dirname(dst_file))
           FileUtils.mkdir_p(File.dirname(dst_file))
         end
-        File.unlink(dst_file) if File.exists?(dst_file)
+        File.unlink(dst_file) if File.exist?(dst_file)
         src_ext = File.extname(src_file)
         renderer = RENDER_MAP[src_ext]
         if renderer
