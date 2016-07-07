@@ -116,7 +116,7 @@ module Amber
             return path_with_locale if File.exist?(path_with_locale)
           end
         end
-        Amber.logger.error("No such path `#{path2}` from `#{page.content_file(locale)}`.")
+        Amber.logger.error("No such path `#{search_path}` from `#{page.content_file(locale)}`.")
         return nil
       end
 
