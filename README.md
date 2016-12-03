@@ -19,6 +19,7 @@ features that make it unique:
   different markup languages).
 * Flexible: Ability to set custom page path aliases, render partials, rich
   navigation, and so on.
+* Wiki Linking: Built in wiki-linking, with dead link detection and hierarchical paths.
 
 Amber allows ERB (ruby code) in all page markup types, making it unsuitable for
 any website where you do not trust the source of the page text.
