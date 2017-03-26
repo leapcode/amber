@@ -94,6 +94,8 @@ module Amber
         else
           nil
         end
+      elsif @pages_by_path[filter]
+        @pages_by_path[filter]
       else
         @pages_by_name[filter]
       end
@@ -179,7 +181,7 @@ module Amber
     # registers a page with the site, indexing the page path in our various hashes
     #
     def add_page(page)
-      @pages_by_name[page.name] = page
+      @pages_by_name[page.name] ||= page
       @pages_by_path[page.path.join('/')] = page
       add_aliases(I18n.default_locale, page, @pages_by_path)
       page.locales.each do |locale|
