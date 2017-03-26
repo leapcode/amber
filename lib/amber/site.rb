@@ -162,7 +162,7 @@ module Amber
       base_page.config = config
 
       # load menu and locals
-      I18n.load_path += Dir[File.join(config.locales_dir, '/*.{rb,yml,yaml}')] if config.locales_dir
+      I18n.load_path += Dir[File.join(config.locales_dir, '/**/*.{rb,yml,yaml}')] if config.locales_dir
 
       # add the full directory tree
       base_page.scan_directory_tree do |page, asset_dir|
