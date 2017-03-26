@@ -17,6 +17,12 @@ module Amber
       end
 
       #
+      # link_to like rails
+      def link_to(label, url, options=nil)
+        link({label => url}, options)
+      end
+
+      #
       # three forms:
       #
       #  (1) link('page-name')
@@ -30,15 +36,15 @@ module Amber
       #
       def link(name, options=nil)
         options = nil if options && !options.is_a?(Hash)
+        klass = nil
         if name.is_a? Hash
           klass = name.delete(:class)
           label, name = name.to_a.first
           if label.is_a? Symbol
             label = I18n.t label
           end
-        else
-          klass = options[:class] if options
         end
+        klass ||= options[:class] if options
         if name =~ /^#/ || name =~ /^http/ || name =~ /\./
           path = name
           label ||= name
