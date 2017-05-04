@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.email       = ["elijah@leap.se"]
   s.files       = Dir["{lib}/**/*.rb", "{lib}/**/*.erb", "{locales}/**/*.yml", "bin/*", "LICENSE", "*.md"]
   s.homepage    = "https://github.com/leapcode/amber"
-  s.license     = "AGPL"
+  s.license     = "AGPL-1.0"
   s.executables << 'amber'
   s.bindir      = 'bin'
   s.required_ruby_version = '>= 1.9'
