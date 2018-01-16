@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+export RACK_ENV=${RACK_ENV:-"production"}
+
+echo "---> CUSTOM S2I RUN COMPLETE"
+
+bundle exec amber server
