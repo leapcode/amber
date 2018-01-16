@@ -6,4 +6,5 @@ export RACK_ENV=${RACK_ENV:-"production"}
 
 echo "---> CUSTOM S2I RUN COMPLETE"
 
+cd test/site
 bundle exec amber server
