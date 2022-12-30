@@ -1,5 +1,3 @@
-require 'byebug'
-
 module Amber
   module Render
     module LanguageHelper
