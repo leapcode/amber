@@ -1,9 +1,11 @@
+require 'byebug'
+
 module Amber
   module Render
     module LanguageHelper
 
       def t(*args)
-        I18n.t(*args)
+        I18n.t(*args, default: I18n.t(args.first, locale: I18n.default_locale))
       end
 
       def translation_missing?
