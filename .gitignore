@@ -2,3 +2,4 @@ test/site/public
 notes.txt
 *.gem
 Gemfile.lock
+test/site/apache.log

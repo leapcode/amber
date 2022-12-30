@@ -124,7 +124,10 @@ module Amber
       end
 
       def render_haml(file_path, view)
-        template = Tilt::HamlTemplate.new(file_path, {:format => :html5, :default_encoding => 'UTF-8'})
+        # https://www.rubydoc.info/gems/haml/5.0.1/Haml/Options
+        template = Tilt::HamlTemplate.new(
+          file_path, escape_html: false, encoding: 'UTF-8'
+        )
         html = template.render(view, view.locals)
         html = add_variables(view, html)
         html = add_bracket_links(view, html)

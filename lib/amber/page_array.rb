@@ -49,7 +49,7 @@ module Amber
     end
 
     def to_numeric(anything)
-      num = BigDecimal.new(anything.to_s)
+      num = BigDecimal(anything.to_s)
       if num.frac == 0
         num.to_i
       else

@@ -142,7 +142,7 @@ module Amber::Render
 
     def to_toc
       super
-      ul = Nokogiri::XML::Node.new(@options[:tag], Nokogiri::HTML.fragment(""))
+      ul = Nokogiri::XML::Node.new(@options[:tag], Nokogiri::XML::Document.new)
       @toc.populate_node(ul, @options)
       ul.to_pretty_html
     end

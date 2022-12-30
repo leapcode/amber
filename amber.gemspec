@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9'
 
   s.add_runtime_dependency 'i18n', '~> 0.7'
-  s.add_runtime_dependency 'haml', '~> 5.0'
+  s.add_runtime_dependency 'haml', '> 5.0.0', '< 6.0.0'
   s.add_runtime_dependency 'haml-contrib', '~> 1.0'
   s.add_runtime_dependency 'RedCloth', '~> 4.3'
   s.add_runtime_dependency 'rdiscount', '~> 2.1'

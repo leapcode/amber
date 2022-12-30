@@ -170,6 +170,19 @@ Available properties:
 
 To make a property none-inheritable, specify it like so: `@this.layout = 'home'`. For some properties, like `alias`, it does not make sense for the property to be inheritable.
 
+Testing
+-----------------------------------
+
+Run all the tests:
+
+    rake test
+
+Run an individual test:
+
+    ruby -b test/unit/my_test.rb
+
+Use `-b` to show the full stack trace.
+
 Troubleshooting
 -----------------------------------
 

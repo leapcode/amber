@@ -6,8 +6,6 @@ gem 'tilt', '>= 2.0.0'
 require 'tilt'
 require 'haml'
 
-#Haml::Options.defaults[:format] = :html5
-
 module Amber
   module Render
 
@@ -35,10 +33,14 @@ module Amber
 
       def initialize(file_path, &block)
         if file_path =~ /\.haml$/
-          ugly = Amber.env != :test
-          @template = Tilt::HamlTemplate.new(file_path, {:format => :html5, :ugly => ugly})
+          # https://www.rubydoc.info/gems/haml/5.0.1/Haml/Options
+          @template = Tilt::HamlTemplate.new(
+            file_path, default_encoding: 'UTF-8', escape_html: false
+          )
         else
-          @template = Tilt.new(file_path, &block)
+          @template = Tilt.new(
+            file_path, default_encoding: 'UTF-8', &block
+          )
         end
       end
 

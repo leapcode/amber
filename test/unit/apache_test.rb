@@ -1,10 +1,12 @@
 require File.expand_path('test_helper', File.dirname(__FILE__))
 
 require 'net/http'
+require 'tempfile'
 
 class ApacheTest < Minitest::Test
 
   APACHE_URL = 'http://127.0.0.1:8888'
+  SITE_ROOT = File.expand_path('../../site', __FILE__)
 
   def self.test_order
     :alpha
@@ -12,7 +14,7 @@ class ApacheTest < Minitest::Test
 
   def test_001_start_apache
     $path_prefix = nil
-    Amber::CLI.new(test_site).rebuild({})
+    Amber::CLI.new(SITE_ROOT).rebuild({})
     start_apache(apache_config)
   end
 
@@ -72,7 +74,7 @@ class ApacheTest < Minitest::Test
 
   def test_100_start_apache
     $path_prefix = '/test'
-    Amber::CLI.new(test_site).rebuild({})
+    Amber::CLI.new(SITE_ROOT).rebuild({})
     start_apache(apache_config_with_prefix)
   end
 
@@ -142,7 +144,7 @@ class ApacheTest < Minitest::Test
       assert_equal $1, response['location'].sub(APACHE_URL, ''), "bad redirect from `#{path}`"
       status ||= 307
     else
-      body = response.body.gsub(/<\/?p>\n?/, '')
+      body = response.body.gsub(/<\/?p>\n?/, '').strip
       assert_equal response_text, body, "unexpected result for `#{path}`"
       status ||= 200
     end
@@ -158,16 +160,19 @@ class ApacheTest < Minitest::Test
   #  end
   #end
 
+  def tmp_config(path)
+    file = Tempfile.new('amber-test-')
+    file.write(File.read(path).gsub('DIR', SITE_ROOT))
+    file.close
+    return file.path
+  end
+
   def apache_config
-    File.expand_path('../site/apache.conf', File.dirname(__FILE__))
+    @apache_config ||= tmp_config(File.join(SITE_ROOT, 'apache.conf'))
   end
 
   def apache_config_with_prefix
-    File.expand_path('../site/apache_with_prefix.conf', File.dirname(__FILE__))
-  end
-
-  def test_site
-    File.expand_path('../site/', File.dirname(__FILE__))
+    @apache_config_prefix ||= tmp_config(File.join(SITE_ROOT, 'apache_with_prefix.conf'))
   end
 
   def start_apache(config)
