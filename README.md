@@ -34,12 +34,16 @@ Installing from gem:
 
 Alternately, you can run directly from source:
 
-    sudo apt-get install rubygems ruby-dev build-essential
+    sudo apt install ruby ruby-dev
     sudo gem install bundler
+    cd ~
     git clone https://github.com/leapcode/amber
     cd amber
-    bundle install
-    sudo ln -s `pwd`/bin/amber /usr/local/bin
+    mkdir vendor
+    bundle config set --local path "vendor"
+    bundle
+    export GEM_HOME="~/amber/vendor/ruby/2.7.0/"
+    export PATH="~/amber/bin:$PATH"
 
 Directory structure
 ---------------------------------
